@@ -18,8 +18,15 @@
       },
       "predictiveBackGestureEnabled": false
     },
+    "scheme": "servicewala",
     "web": {
+      "bundler": "metro",
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      "expo-router",
+      "expo-status-bar",
+      "expo-font"
+    ]
   }
 }

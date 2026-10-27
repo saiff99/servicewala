@@ -1,0 +1,147 @@
+# 🛠️ Servicewala — Multi-Portal On-Demand Home Services Ecosystem
+
+[![React Native](https://img.shields.io/badge/React_Native-0.88-61DAFB?logo=react&logoColor=black)](https://reactnative.dev/)
+[![Expo SDK](https://img.shields.io/badge/Expo_SDK-52.0-000020?logo=expo&logoColor=white)](https://expo.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Zustand](https://img.shields.io/badge/State-Zustand_5-443E38)](https://zustand-demo.pmnd.rs/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+An enterprise-grade, **Urban Company & HomeAdvisor inspired** Multi-Portal Home Services Platform built with **React Native (Expo + Expo Router + React Native Web + TypeScript)**. 
+
+From a single unified codebase, **Servicewala** delivers:
+1. **Desktop/Laptop Web Experience:** Ultra-fast, responsive web applications for Customers and Operations Admin.
+2. **Mobile Apps:** Ready-to-compile cross-platform native mobile applications (iOS & Android) for Customers and On-Field Technicians.
+
+---
+
+## 🌟 Triple-Portal Architecture
+
+Servicewala unifies three complete user roles into one synchronized ecosystem:
+
+### 1. 🛒 Customer Portal (`app/(customer)`)
+- **Urban Company Style Header:** Interactive location dropdown (`Old Ballygunge Road, Kolkata`), search bar, quick links, and cart badge.
+- **HomeAdvisor Luxury Hero Section:** Full-bleed interior hero background, frosted glass search card, and dual-input pill search capsule.
+- **11-Category Horizontal Quick Bar:** Direct filtering for *Handyperson, Landscaping, Plumbing, Electrical, Remodeling, Roofing, Painting, Cleaning, HVAC, Windows, Concrete*.
+- **Seasonal Deals & Offers:** One-tap promo code apply with instant checkout price deductions.
+- **Interactive Cart & Checkout:** Schedule selection, dynamic cart total, address input, and cash/online payment.
+- **Live Order Tracking:** Active booking status tracking with customer-side 4-digit **Start OTP** and **End OTP**.
+
+### 2. 🧰 Technician / Partner Portal (`app/(partner)`)
+- **Job Feed & Radar:** Instant broadcast notifications for new booking requests matching the technician's skills.
+- **Two-Factor Job Security:** 
+  - Verification of **Start OTP** provided by customer before beginning work.
+  - Verification of **End OTP** upon job completion.
+- **Earnings & Commission Ledger:** Detailed gross revenue, platform commission deduction (15%), net payouts, and wallet balance.
+- **Partner Profile & KYC:** Status toggle (*Online / Busy / Offline*), ratings, completed job counts, and verification badges.
+
+### 3. 📊 Operations Admin Control Center (`app/(admin)`)
+- **Live Analytics Dashboard:** Real-time Gross Merchandise Value (GMV), completed jobs, active technicians, and booking volume graphs.
+- **Dispatch Management:** Live booking order monitoring with manual/automatic technician reassignment and cancellation overrides.
+- **Dynamic Catalog Manager:** Complete CRUD for services, price edits, category reassignments, and duration adjustments.
+- **Fleet Verification:** Review and approve/reject technician KYC documents and adjust commission rates.
+
+---
+
+## ⚡ The Live Simulation Engine (`useEcosystemStore.ts`)
+
+Servicewala implements a **100% reactive client-side simulation engine** powered by **Zustand**:
+- **No external backend required for Phase 1 demoing:** Every action in the Customer portal immediately updates the Technician and Admin portals in real-time.
+- **Docked Portal Switcher Bar:** Easily toggle between **Customer**, **Technician**, and **Admin** views from the floating bar at the bottom of the screen.
+- **Cross-Portal Toast Notifications:** When an order is booked or updated, real-time toast alerts appear across all views.
+
+---
+
+## 🔄 Booking Lifecycle Flow
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Customer
+    participant EcosystemStore as Zustand Store
+    actor Technician
+    actor Admin
+
+    Customer->>EcosystemStore: Places Booking with Address & Time Slot
+    EcosystemStore->>Customer: Generates Order, Start OTP & End OTP
+    EcosystemStore->>Admin: Live Order Appears on Dispatch Dashboard
+    EcosystemStore->>Technician: Real-time Job Alert Broadcasted
+    Technician->>EcosystemStore: Accepts Job
+    Technician->>Customer: Arrives at Doorstep & Requests Start OTP
+    Technician->>EcosystemStore: Enters Start OTP (Job In Progress)
+    Technician->>Customer: Completes Work & Requests End OTP
+    Technician->>EcosystemStore: Enters End OTP (Job Completed)
+    EcosystemStore->>Admin: Commission Computed & Wallet Updated
+    EcosystemStore->>Customer: Order Marked Complete & Invoice Generated
+```
+
+---
+
+## 🚀 Quick Start Guide
+
+### Prerequisites
+- [Node.js](https://nodejs.org/) (v18 or higher recommended)
+- `npm` or `bun`
+
+### 1. Clone the repository
+```bash
+git clone https://github.com/your-username/servicewala.git
+cd servicewala
+```
+
+### 2. Install dependencies
+```bash
+npm install
+```
+
+### 3. Start the application
+```bash
+# Start in Web mode (Default)
+npm run web
+
+# Start with Expo interactive menu (Scan QR code with Expo Go)
+npm run start
+```
+Open **`http://localhost:8081`** in your browser.
+
+---
+
+## 📁 Repository Directory Structure
+
+```
+servicewala/
+├── app/                         # Expo Router File-Based Routing
+│   ├── (admin)/                 # Operations Admin Panel
+│   ├── (customer)/              # Customer Marketplace & Checkout
+│   ├── (partner)/               # Technician Mobile-First Portal
+│   ├── _layout.tsx              # Root Layout & Global Providers
+│   └── index.tsx                # Entry Redirection
+│
+├── src/
+│   ├── components/              # Shared Components (PortalSwitcherBar, NotificationBanner)
+│   ├── constants/               # Global Theme, Colors, Breakpoints & Typography
+│   ├── data/                    # Rich Initial Mock Data (Categories, Services, Techs)
+│   └── store/                   # Zustand Global Ecosystem Store (State & Actions)
+│
+├── AGENTS.md                    # AI Agent Guidelines & Context Engineering
+├── ARCHITECTURE.md              # Technical Architecture & Data Flow Guide
+├── package.json                 # Project Dependencies & Scripts
+└── tsconfig.json                # TypeScript Strict Configuration
+```
+
+---
+
+## 🛠️ Verification & Quality Checks
+
+Run typechecks and linting before submitting pull requests:
+```bash
+# TypeScript Typecheck
+npx tsc --noEmit
+
+# ESLint Rule Verification
+npx expo lint
+```
+
+---
+
+## 📄 License
+This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
