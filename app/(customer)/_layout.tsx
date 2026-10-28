@@ -164,15 +164,15 @@ export default function CustomerLayout() {
                       onHoverOut={() => setHoveredNav(null)}
                       style={[
                         styles.textNavLink,
-                        isHovered && styles.textNavLinkHovered,
                         isActive && styles.textNavLinkActive,
+                        isHovered && styles.textNavLinkHovered,
                       ]}
                     >
                       <Text
                         style={[
                           styles.textNavLinkLabel,
-                          isHovered && styles.textNavLinkLabelHovered,
                           isActive && styles.textNavLinkLabelActive,
+                          isHovered && styles.textNavLinkLabelHovered,
                         ]}
                       >
                         {item.label}
@@ -236,7 +236,7 @@ export default function CustomerLayout() {
                         <Ionicons
                           name="location-sharp"
                           size={14}
-                          color={selectedLocation === city ? '#991B1B' : '#94A3B8'}
+                          color={selectedLocation === city ? '#0F172A' : '#94A3B8'}
                         />
                         <Text
                           style={[
@@ -258,7 +258,7 @@ export default function CustomerLayout() {
                         }}
                         style={styles.locationMenuItem}
                       >
-                        <Ionicons name="add-circle-outline" size={14} color="#991B1B" />
+                        <Ionicons name="add-circle-outline" size={14} color="#0F172A" />
                         <Text style={styles.locationCustomAddText} numberOfLines={1}>
                           {'Use "' + locationSearchQuery + '"'}
                         </Text>
@@ -477,7 +477,7 @@ export default function CustomerLayout() {
                     <Ionicons
                       name="location-sharp"
                       size={14}
-                      color={selectedLocation === city ? '#991B1B' : '#94A3B8'}
+                      color={selectedLocation === city ? '#0F172A' : '#94A3B8'}
                     />
                     <Text
                       style={[
@@ -499,7 +499,7 @@ export default function CustomerLayout() {
                     }}
                     style={styles.locationMenuItem}
                   >
-                    <Ionicons name="add-circle-outline" size={14} color="#991B1B" />
+                    <Ionicons name="add-circle-outline" size={14} color="#0F172A" />
                     <Text style={styles.locationCustomAddText} numberOfLines={1}>
                       {'Use "' + locationSearchQuery + '"'}
                     </Text>
@@ -723,24 +723,38 @@ const styles = StyleSheet.create({
     paddingVertical: 7,
     borderRadius: 8,
     backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: 'transparent',
     cursor: 'pointer',
-  },
-  textNavLinkHovered: {
-    backgroundColor: '#FEF2F2',
-  },
+    transition: 'all 0.22s cubic-bezier(0.16, 1, 0.3, 1)',
+  } as any,
   textNavLinkActive: {
     backgroundColor: '#F1F5F9',
+    borderColor: '#E2E8F0',
+  },
+  textNavLinkHovered: {
+    backgroundColor: '#000000',
+    borderColor: '#000000',
+    transform: [{ translateY: -1 }],
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.16,
+    shadowRadius: 8,
+    elevation: 4,
   },
   textNavLinkLabel: {
     fontSize: 14,
     fontWeight: '600',
     color: '#475569',
-  },
-  textNavLinkLabelHovered: {
-    color: '#991B1B',
-  },
+    transition: 'color 0.2s ease',
+  } as any,
   textNavLinkLabelActive: {
     color: '#0F172A',
+    fontWeight: '600',
+  },
+  textNavLinkLabelHovered: {
+    color: '#FFFFFF',
+    fontWeight: '600',
   },
   activeOrdersDot: {
     backgroundColor: '#10B981',
@@ -823,7 +837,7 @@ const styles = StyleSheet.create({
   },
   locationCustomAddText: {
     fontSize: 12.5,
-    color: '#991B1B',
+    color: '#0F172A',
     fontWeight: '600',
     fontStyle: 'italic',
   },
@@ -833,9 +847,11 @@ const styles = StyleSheet.create({
     gap: 8,
     paddingHorizontal: 14,
     paddingVertical: 10,
-  },
+    cursor: 'pointer',
+    transition: 'all 0.15s ease',
+  } as any,
   locationMenuItemActive: {
-    backgroundColor: '#FEF2F2',
+    backgroundColor: '#F1F5F9',
   },
   locationMenuText: {
     fontSize: 13,
@@ -843,7 +859,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   locationMenuTextActive: {
-    color: '#991B1B',
+    color: '#0F172A',
     fontWeight: '700',
   },
   searchBox: {

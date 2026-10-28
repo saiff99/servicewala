@@ -18,6 +18,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useEcosystemStore } from '../../src/store/useEcosystemStore';
 import { SPOTLIGHT_OFFERS, TESTIMONIALS } from '../../src/data/mockEcosystemData';
 import { THEME, currencyFormatter } from '../../src/constants/theme';
+import { SUPPORTED_BRANDS, BrandLogo } from '../../src/components';
 
 /* ─── Specialized Service Categories Strip (AC, Gadgets & Appliances) ─── */
 const QUICK_SERVICES_STRIP = [
@@ -65,6 +66,8 @@ export default function CustomerHomeScreen() {
   const [hoveredStripId, setHoveredStripId] = useState<string | null>(null);
   const [hoveredCatId, setHoveredCatId] = useState<string | null>(null);
   const [hoveredTestimonialId, setHoveredTestimonialId] = useState<string | null>(null);
+  const [hoveredOfferId, setHoveredOfferId] = useState<string | null>(null);
+  const [hoveredBrandKey, setHoveredBrandKey] = useState<string | null>(null);
   const mainScrollRef = useRef<any>(null);
 
   /* Hero fade-in animation */
@@ -85,6 +88,37 @@ export default function CustomerHomeScreen() {
       }),
     ]).start();
   }, [heroFade, heroSlide]);
+
+  /* Marquee animation styles for web (left-to-right infinite drift, pauses on hover) */
+  useEffect(() => {
+    if (Platform.OS === 'web' && typeof document !== 'undefined') {
+      const styleId = 'servicewala-brand-marquee-styles';
+      if (!document.getElementById(styleId)) {
+        const style = document.createElement('style');
+        style.id = styleId;
+        style.textContent = `
+          @keyframes servicewalaMarqueeLtoR {
+            0% {
+              transform: translate3d(-50%, 0, 0);
+            }
+            100% {
+              transform: translate3d(0, 0, 0);
+            }
+          }
+          .servicewala-marquee-track {
+            display: flex !important;
+            flex-direction: row !important;
+            width: max-content !important;
+            animation: servicewalaMarqueeLtoR 45s linear infinite !important;
+          }
+          .servicewala-marquee-track:hover {
+            animation-play-state: paused !important;
+          }
+        `;
+        document.head.appendChild(style);
+      }
+    }
+  }, []);
 
   // Filter services if search query is entered or quick category selected
   const filteredServices = useMemo(() => {
@@ -413,38 +447,61 @@ export default function CustomerHomeScreen() {
           </View>
         </View>
 
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.offersRow}>
-          {SPOTLIGHT_OFFERS.map((offer) => (
-            <View
-              key={offer.id}
-              style={[
-                styles.offerCard,
-                { backgroundColor: offer.bgGradient[0] },
-                isDesktop ? styles.offerCardDesktop : styles.offerCardMobile,
-              ]}
-            >
-              <View style={styles.offerBadge}>
-                <Text style={styles.offerBadgeText}>{offer.badge}</Text>
-              </View>
-              <Text style={styles.offerTitle}>{offer.title}</Text>
-              <Text style={styles.offerSub}>{offer.subtitle}</Text>
-              <View style={styles.offerBottomRow}>
-                <View style={styles.offerCodePill}>
-                  <Text style={styles.offerCodeText}>{offer.code}</Text>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.offersRow}
+          style={styles.offersScroll}
+        >
+          {SPOTLIGHT_OFFERS.map((offer) => {
+            const isHovered = hoveredOfferId === offer.id;
+            return (
+              <Pressable
+                key={offer.id}
+                onHoverIn={() => setHoveredOfferId(offer.id)}
+                onHoverOut={() => setHoveredOfferId(null)}
+                style={[
+                  styles.offerCard,
+                  isDesktop ? styles.offerCardDesktop : styles.offerCardMobile,
+                  isHovered && styles.offerCardHovered,
+                ]}
+              >
+                <View style={styles.offerBadge}>
+                  <Text style={styles.offerBadgeText}>{offer.badge}</Text>
                 </View>
-                <TouchableOpacity
-                  onPress={() => {
-                    applyPromo(offer.code);
-                    router.push('/(customer)/checkout');
-                  }}
-                  style={styles.offerApplyBtn}
-                >
-                  <Text style={styles.offerApplyBtnText}>Use Deal</Text>
-                  <Ionicons name="arrow-forward" size={14} color="#0F172A" />
-                </TouchableOpacity>
-              </View>
-            </View>
-          ))}
+
+                <Text style={styles.offerTitle} numberOfLines={1}>
+                  {offer.title}
+                </Text>
+                <Text style={styles.offerSub} numberOfLines={1}>
+                  {offer.subtitle}
+                </Text>
+
+                <View style={styles.offerBottomRow}>
+                  <View style={[styles.offerCodePill, isHovered && styles.offerCodePillHovered]}>
+                    <Ionicons name="pricetag-outline" size={11} color="#0F172A" />
+                    <Text style={styles.offerCodeText}>{offer.code}</Text>
+                  </View>
+                  <TouchableOpacity
+                    onPress={() => {
+                      applyPromo(offer.code);
+                      router.push('/(customer)/checkout');
+                    }}
+                    style={[styles.offerApplyBtn, isHovered && styles.offerApplyBtnHovered]}
+                    activeOpacity={0.85}
+                  >
+                    <Text style={styles.offerApplyBtnText}>Use Deal</Text>
+                    <Ionicons
+                      name="arrow-forward"
+                      size={12}
+                      color="#FFFFFF"
+                      style={isHovered ? styles.offerArrowHovered : undefined}
+                    />
+                  </TouchableOpacity>
+                </View>
+              </Pressable>
+            );
+          })}
         </ScrollView>
       </View>
 
@@ -668,6 +725,65 @@ export default function CustomerHomeScreen() {
               </Pressable>
             );
           })}
+        </View>
+      </View>
+
+      {/* ══════════════ TRUSTED BRAND NETWORK SECTION (Full Width) ══════════════ */}
+      <View style={styles.brandSectionContainer}>
+        <View style={styles.brandSectionHeader}>
+          <View style={styles.brandHeaderBadge}>
+            <Ionicons name="shield-checkmark" size={13} color="#0F172A" />
+            <Text style={styles.brandHeaderBadgeText}>AUTHORIZED SERVICE & MULTI-BRAND REPAIR</Text>
+          </View>
+          <Text style={styles.brandSectionTitle}>Top Brands We Service & Support</Text>
+          <Text style={styles.brandSectionSub}>
+            Doorstep repairs using 100% genuine OEM parts for 22+ leading home appliance and computing brands
+          </Text>
+        </View>
+
+        {/* Full-Width Automated Infinite Marquee Strip */}
+        <View style={styles.brandMarqueeOuter}>
+          {/* Subtle Side Fade Gradients */}
+          {Platform.OS === 'web' && <View style={styles.marqueeFadeLeft} pointerEvents="none" />}
+
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.brandMarqueeTrackContainer}
+            style={styles.brandMarqueeScroll}
+          >
+            <View
+              style={styles.brandMarqueeTrack as any}
+              {...({ className: 'servicewala-marquee-track' } as any)}
+            >
+              {[...SUPPORTED_BRANDS, ...SUPPORTED_BRANDS].map((brand, idx) => {
+                const itemKey = `${brand.id}-${idx}`;
+                const isHovered = hoveredBrandKey === itemKey;
+                return (
+                  <Pressable
+                    key={itemKey}
+                    onHoverIn={() => setHoveredBrandKey(itemKey)}
+                    onHoverOut={() => setHoveredBrandKey(null)}
+                    style={[
+                      styles.brandCard,
+                      isHovered && {
+                        borderColor: brand.originalColor,
+                        shadowColor: brand.originalColor,
+                        shadowOpacity: 0.22,
+                        shadowRadius: 14,
+                        elevation: 5,
+                        transform: [{ translateY: -3 }, { scale: 1.04 }],
+                      },
+                    ]}
+                  >
+                    <BrandLogo brand={brand} isHovered={isHovered} />
+                  </Pressable>
+                );
+              })}
+            </View>
+          </ScrollView>
+
+          {Platform.OS === 'web' && <View style={styles.marqueeFadeRight} pointerEvents="none" />}
         </View>
       </View>
 
@@ -1122,14 +1238,38 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#64748B',
   },
+  offersScroll: {
+    overflow: 'visible',
+  },
   offersRow: {
     gap: 16,
-    paddingBottom: 8,
+    paddingTop: 8,
+    paddingBottom: 12,
+    paddingHorizontal: 2,
   },
   offerCard: {
-    borderRadius: 18,
-    padding: 20,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 13,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
     justifyContent: 'space-between',
+    cursor: 'pointer',
+    transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+  } as any,
+  offerCardHovered: {
+    transform: [{ translateY: -3 }],
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.09,
+    shadowRadius: 18,
+    elevation: 5,
   },
   offerCardDesktop: {
     width: 360,
@@ -1139,27 +1279,31 @@ const styles = StyleSheet.create({
   },
   offerBadge: {
     alignSelf: 'flex-start',
-    backgroundColor: 'rgba(255, 255, 255, 0.25)',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 20,
-    marginBottom: 12,
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    marginBottom: 8,
   },
   offerBadgeText: {
-    color: '#FFFFFF',
-    fontSize: 11,
-    fontWeight: '800',
+    color: '#334155',
+    fontSize: 10.5,
+    fontWeight: '700',
+    letterSpacing: 0.4,
   },
   offerTitle: {
-    fontSize: 18,
+    fontSize: 15,
     fontWeight: '800',
-    color: '#FFFFFF',
-    marginBottom: 6,
+    color: '#0F172A',
+    marginBottom: 2,
+    letterSpacing: -0.2,
   },
   offerSub: {
-    fontSize: 13,
-    color: 'rgba(255, 255, 255, 0.9)',
-    marginBottom: 20,
+    fontSize: 12,
+    color: '#64748B',
+    marginBottom: 10,
   },
   offerBottomRow: {
     flexDirection: 'row',
@@ -1167,33 +1311,48 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   offerCodePill: {
-    backgroundColor: 'rgba(0, 0, 0, 0.2)',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: '#F8FAFC',
+    paddingHorizontal: 9,
+    paddingVertical: 5,
+    borderRadius: 6,
     borderWidth: 1,
     borderStyle: 'dashed',
-    borderColor: 'rgba(255, 255, 255, 0.5)',
+    borderColor: '#CBD5E1',
+    transition: 'all 0.2s ease',
+  } as any,
+  offerCodePillHovered: {
+    backgroundColor: '#F1F5F9',
+    borderColor: '#94A3B8',
   },
   offerCodeText: {
-    color: '#FFFFFF',
-    fontWeight: '800',
-    fontSize: 13,
-    letterSpacing: 1,
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#0F172A',
+    letterSpacing: 0.5,
   },
   offerApplyBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 10,
+    backgroundColor: '#0F172A',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
     gap: 4,
+    transition: 'all 0.2s ease',
+  } as any,
+  offerApplyBtnHovered: {
+    backgroundColor: '#000000',
   },
   offerApplyBtnText: {
-    color: '#0F172A',
-    fontWeight: '800',
-    fontSize: 12,
+    color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: 11.5,
+  },
+  offerArrowHovered: {
+    transform: [{ translateX: 2 }],
   },
   servicesGrid: {
     flexDirection: 'row',
@@ -1582,4 +1741,112 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     flexShrink: 0,
   },
+  /* ══════════════ BRAND NETWORK MARQUEE STRIP ══════════════ */
+  brandSectionContainer: {
+    width: '100%',
+    marginTop: 48,
+    marginBottom: 8,
+  },
+  brandSectionHeader: {
+    maxWidth: 1200,
+    width: '100%',
+    marginHorizontal: 'auto',
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  brandHeaderBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    marginBottom: 10,
+  },
+  brandHeaderBadgeText: {
+    color: '#0F172A',
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 0.8,
+  },
+  brandSectionTitle: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: '#0F172A',
+    letterSpacing: -0.4,
+    textAlign: 'center',
+    marginBottom: 6,
+  },
+  brandSectionSub: {
+    fontSize: 14,
+    color: '#64748B',
+    fontWeight: '500',
+    textAlign: 'center',
+    maxWidth: 640,
+    lineHeight: 20,
+  },
+  brandMarqueeOuter: {
+    width: '100%',
+    position: 'relative',
+    backgroundColor: '#FFFFFF',
+    paddingVertical: 18,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: '#E2E8F0',
+    overflow: 'hidden',
+  },
+  marqueeFadeLeft: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    width: 80,
+    zIndex: 10,
+    backgroundImage: 'linear-gradient(to right, #FFFFFF, rgba(255,255,255,0))',
+  } as any,
+  marqueeFadeRight: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    right: 0,
+    width: 80,
+    zIndex: 10,
+    backgroundImage: 'linear-gradient(to left, #FFFFFF, rgba(255,255,255,0))',
+  } as any,
+  brandMarqueeScroll: {
+    overflow: 'visible',
+  },
+  brandMarqueeTrackContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  brandMarqueeTrack: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+    paddingHorizontal: 16,
+  },
+  brandCard: {
+    width: 172,
+    height: 72,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    cursor: 'pointer',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 2,
+    transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+  } as any,
 });
