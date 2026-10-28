@@ -110,3 +110,4 @@ npx expo install <package-name>   # Resolves compatible versions with Expo SDK 5
 2. **Keep edits surgical:** Use `replace_file_content` targeting specific components instead of rewriting whole files.
 3. **Preserve existing state & comments:** Never delete types or mock data unless explicitly requested.
 4. **Zero Backend Rule:** Maintain all interactivity inside Zustand (`useEcosystemStore.ts`).
+5. **Context Architecture Vault Guardian:** Whenever any structural, schema, portal routing, or business rule changes are made, proactively alert the user and offer to update the Context Architecture Vault (`ARCHITECTURE.md`, `AGENTS.md`, `ROADMAP.md`). Never let architectural changes go undocumented.

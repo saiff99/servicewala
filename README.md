@@ -19,9 +19,9 @@ From a single unified codebase, **Servicewala** delivers:
 Servicewala unifies three complete user roles into one synchronized ecosystem:
 
 ### 1. 🛒 Customer Portal (`app/(customer)`)
-- **Urban Company Style Header:** Interactive location dropdown (`Old Ballygunge Road, Kolkata`), search bar, quick links, and cart badge.
-- **HomeAdvisor Luxury Hero Section:** Full-bleed interior hero background, frosted glass search card, and dual-input pill search capsule.
-- **11-Category Horizontal Quick Bar:** Direct filtering for *Handyperson, Landscaping, Plumbing, Electrical, Remodeling, Roofing, Painting, Cleaning, HVAC, Windows, Concrete*.
+- **Urban Company Style Header:** City location selector (Kolkata, Salt Lake, Howrah, etc.), direct category links (*Home, Computer, Printer, Air Conditioner*), global search, cart counter, and Profile dropdown menu with active bookings badge.
+- **HomeAdvisor Luxury Hero Section:** Clean framed workstation hero banner, frosted glass headline card, and responsive pill search capsule with smooth focus styling, live filtering, and auto-scroll to search results.
+- **10-Category Specialized Quick Bar:** Direct filtering for *Laptop & Mac, Desktop PC, Printer Repair, AC Service, Refrigerator, Washing Machine, Geyser, Chimney, Air Cooler, Home Cleaning*.
 - **Seasonal Deals & Offers:** One-tap promo code apply with instant checkout price deductions.
 - **Interactive Cart & Checkout:** Schedule selection, dynamic cart total, address input, and cash/online payment.
 - **Live Order Tracking:** Active booking status tracking with customer-side 4-digit **Start OTP** and **End OTP**.
@@ -84,7 +84,7 @@ sequenceDiagram
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/your-username/servicewala.git
+git clone https://github.com/saiff99/servicewala.git
 cd servicewala
 ```
 

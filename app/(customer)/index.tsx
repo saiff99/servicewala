@@ -263,9 +263,9 @@ export default function CustomerHomeScreen() {
                     size={24}
                     color={
                       isSelected
-                        ? '#991B1B'
+                        ? '#FFFFFF'
                         : isHovered
-                        ? '#0F172A'
+                        ? '#991B1B'
                         : '#475569'
                     }
                   />
@@ -792,49 +792,59 @@ const styles = StyleSheet.create({
     height: 84,
     cursor: 'pointer',
     position: 'relative',
-  },
+    transition: 'all 0.22s cubic-bezier(0.4, 0, 0.2, 1)',
+  } as any,
   iconStripItemActive: {
-    backgroundColor: '#FEF2F2',
+    backgroundColor: 'transparent',
   },
   iconStripItemHovered: {
-    backgroundColor: '#F8FAFC',
+    backgroundColor: 'transparent',
   },
   iconStripIconWrap: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 46,
+    height: 46,
+    borderRadius: 23,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 6,
     backgroundColor: '#F8FAFC',
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
-  },
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    transition: 'all 0.22s cubic-bezier(0.4, 0, 0.2, 1)',
+  } as any,
   iconStripIconWrapActive: {
-    backgroundColor: '#FEE2E2',
-    borderColor: '#FECACA',
+    backgroundColor: '#991B1B',
+    borderColor: '#991B1B',
+    transform: [{ translateY: -2 }],
+    shadowColor: '#991B1B',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.28,
+    shadowRadius: 8,
+    elevation: 4,
   },
   iconStripIconWrapHovered: {
-    backgroundColor: '#FFFFFF',
-    borderColor: '#CBD5E1',
-    transform: [{ translateY: -3 }, { scale: 1.06 }],
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.10,
-    shadowRadius: 6,
-    elevation: 3,
+    backgroundColor: '#FEF2F2',
+    borderColor: '#FCA5A5',
+    transform: [{ translateY: -3 }, { scale: 1.05 }],
+    shadowColor: '#991B1B',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.16,
+    shadowRadius: 10,
+    elevation: 4,
   },
   iconStripLabel: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#374151',
-  },
+    color: '#475569',
+    transition: 'color 0.2s ease',
+  } as any,
   iconStripLabelActive: {
     color: '#991B1B',
-    fontWeight: '600',
+    fontWeight: '700',
   },
   iconStripLabelHovered: {
     color: '#0F172A',
+    fontWeight: '600',
   },
   iconIndicatorWrap: {
     height: 4,
@@ -843,17 +853,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   iconActiveDot: {
-    width: 6,
-    height: 4,
+    width: 18,
+    height: 3,
     borderRadius: 2,
     backgroundColor: '#991B1B',
-  },
+    transition: 'all 0.2s ease',
+  } as any,
   iconHoverBar: {
-    width: 16,
-    height: 2,
-    borderRadius: 1,
-    backgroundColor: '#64748B',
-  },
+    width: 12,
+    height: 2.5,
+    borderRadius: 1.5,
+    backgroundColor: '#F87171',
+    transition: 'all 0.2s ease',
+  } as any,
 
   /* ══════════════ SUBTLE TRUST STRIP ══════════════ */
   trustStripBar: {
