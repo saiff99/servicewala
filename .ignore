@@ -1,0 +1,9 @@
+# Global Ripgrep / Search Ignore
+package-lock.json
+node_modules/
+.expo/
+dist/
+web-build/
+assets/
+*.log
+

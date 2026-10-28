@@ -1,0 +1,19 @@
+# AI Agent Ignore File — Prevents AI from scanning massive non-code files and wasting tokens
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+node_modules/
+.expo/
+dist/
+web-build/
+assets/
+*.png
+*.jpg
+*.jpeg
+*.svg
+*.webp
+*.log
+*.tsbuildinfo
+.git/
+.DS_Store
+

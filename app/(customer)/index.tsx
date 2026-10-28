@@ -34,9 +34,27 @@ const QUICK_SERVICES_STRIP = [
 ];
 
 
+const CATEGORY_STATS: Record<string, { rating: string; reviews: string }> = {
+  'gadgets-repair': { rating: '4.8', reviews: '12k+' },
+  'printer-repair': { rating: '4.9', reviews: '4.5k+' },
+  'ac-appliances': { rating: '4.8', reviews: '28k+' },
+  'cleaning': { rating: '4.8', reviews: '15k+' },
+  'home-repairs': { rating: '4.7', reviews: '32k+' },
+  'salon-women': { rating: '4.8', reviews: '18k+' },
+  'salon-men': { rating: '4.7', reviews: '9k+' },
+  'painting': { rating: '4.8', reviews: '6k+' },
+};
+
+const TESTIMONIAL_EXTRA: Record<string, { timeAgo: string }> = {
+  'test-1': { timeAgo: '2 days ago' },
+  'test-2': { timeAgo: '4 days ago' },
+  'test-3': { timeAgo: '1 week ago' },
+};
+
 export default function CustomerHomeScreen() {
   const { width } = useWindowDimensions();
   const isDesktop = width >= THEME.breakpoints.desktopMin;
+  const isMobileSmall = width < 540;
 
   const { categories, services, cart, addToCart, removeFromCart, applyPromo } =
     useEcosystemStore();
@@ -45,6 +63,8 @@ export default function CustomerHomeScreen() {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [activeQuickFilter, setActiveQuickFilter] = useState<string | null>(null);
   const [hoveredStripId, setHoveredStripId] = useState<string | null>(null);
+  const [hoveredCatId, setHoveredCatId] = useState<string | null>(null);
+  const [hoveredTestimonialId, setHoveredTestimonialId] = useState<string | null>(null);
   const mainScrollRef = useRef<any>(null);
 
   /* Hero fade-in animation */
@@ -328,37 +348,55 @@ export default function CustomerHomeScreen() {
         </View>
 
         <View style={styles.categoryGrid}>
-          {categories.map((category) => (
-            <TouchableOpacity
-              key={category.id}
-              activeOpacity={0.88}
-              onPress={() => router.push(`/(customer)/category/${category.id}`)}
-              style={[
-                styles.categoryCard,
-                isDesktop ? styles.categoryCardDesktop : styles.categoryCardMobile,
-              ]}
-            >
-              <View style={[styles.categoryIconCircle, { backgroundColor: `${category.tagColor}15` }]}>
-                <Ionicons
-                  name={getCategoryIcon(category.icon) as any}
-                  size={26}
-                  color={category.tagColor}
-                />
-              </View>
-              <Text style={styles.categoryName} numberOfLines={2}>
-                {category.name}
-              </Text>
-              <Text style={styles.categoryDesc} numberOfLines={1}>
-                {category.shortDesc}
-              </Text>
-              <View style={styles.categoryFooter}>
-                <Text style={[styles.categoryCount, { color: category.tagColor }]}>
-                  {category.serviceCount} Services
-                </Text>
-                <Ionicons name="arrow-forward" size={14} color={category.tagColor} />
-              </View>
-            </TouchableOpacity>
-          ))}
+          {categories.map((category) => {
+            const stats = CATEGORY_STATS[category.id] || { rating: '4.8', reviews: '10k+' };
+            const isHovered = hoveredCatId === category.id;
+            return (
+              <Pressable
+                key={category.id}
+                onPress={() => router.push(`/(customer)/category/${category.id}`)}
+                onHoverIn={() => setHoveredCatId(category.id)}
+                onHoverOut={() => setHoveredCatId(null)}
+                style={[
+                  styles.categoryCard,
+                  isDesktop
+                    ? styles.categoryCardDesktop
+                    : isMobileSmall
+                    ? styles.categoryCardMobileSmall
+                    : styles.categoryCardMobile,
+                  isHovered && styles.categoryCardHovered,
+                ]}
+              >
+                <View
+                  style={[
+                    styles.categoryIconBox,
+                    isHovered && styles.categoryIconBoxHovered,
+                  ]}
+                >
+                  <Ionicons
+                    name={getCategoryIcon(category.icon) as any}
+                    size={22}
+                    color={isHovered ? '#000000' : '#1E293B'}
+                  />
+                </View>
+                <View style={styles.categoryContent}>
+                  <Text style={styles.categoryName} numberOfLines={1}>
+                    {category.name}
+                  </Text>
+                  <View style={styles.categoryMetaRow}>
+                    <Ionicons name="star" size={11} color="#F59E0B" />
+                    <Text style={styles.categoryRatingText}>
+                      {stats.rating} ({stats.reviews})
+                    </Text>
+                    <Text style={styles.categoryMetaDivider}>|</Text>
+                    <Text style={styles.categoryServiceCountText}>
+                      {category.serviceCount} Services
+                    </Text>
+                  </View>
+                </View>
+              </Pressable>
+            );
+          })}
         </View>
       </View>
 
@@ -531,35 +569,101 @@ export default function CustomerHomeScreen() {
       <View style={styles.sectionWrap}>
         <View style={styles.sectionHeader}>
           <View>
+            <View style={styles.testimonialHeaderPill}>
+              <Ionicons name="shield-checkmark" size={12} color="#059669" />
+              <Text style={styles.testimonialHeaderPillText}>VERIFIED REVIEWS</Text>
+            </View>
             <Text style={styles.sectionTitle}>What Bengaluru Customers Say</Text>
             <Text style={styles.sectionSub}>Real reviews from verified completed orders</Text>
+          </View>
+
+          <View style={styles.ratingSummaryBadge}>
+            <View style={styles.ratingSummaryScoreRow}>
+              <Ionicons name="star" size={17} color="#F59E0B" />
+              <Text style={styles.ratingSummaryScore}>4.9</Text>
+              <Text style={styles.ratingSummaryOutOf}>/ 5</Text>
+            </View>
+            <View style={styles.ratingSummaryDivider} />
+            <View>
+              <Text style={styles.ratingSummaryTotal}>14,800+ Ratings</Text>
+              <Text style={styles.ratingSummarySub}>98.4% 5-Star Experience</Text>
+            </View>
           </View>
         </View>
 
         <View style={styles.testimonialsGrid}>
-          {TESTIMONIALS.map((t) => (
-            <View
-              key={t.id}
-              style={[
-                styles.testimonialCard,
-                isDesktop ? styles.testimonialCardDesktop : styles.testimonialCardMobile,
-              ]}
-            >
-              <View style={styles.testimonialStars}>
-                {[1, 2, 3, 4, 5].map((s) => (
-                  <Ionicons key={s} name="star" size={15} color="#F59E0B" />
-                ))}
-              </View>
-              <Text style={styles.testimonialComment}>{"\"" + t.comment + "\""}</Text>
-              <View style={styles.testimonialUserRow}>
-                <Image source={{ uri: t.avatar }} style={styles.testimonialAvatar} />
-                <View>
-                  <Text style={styles.testimonialName}>{t.name}</Text>
-                  <Text style={styles.testimonialRole}>{t.role}</Text>
+          {TESTIMONIALS.map((t) => {
+            const extra = TESTIMONIAL_EXTRA[t.id] || { timeAgo: 'Recently' };
+            const isHovered = hoveredTestimonialId === t.id;
+            return (
+              <Pressable
+                key={t.id}
+                onHoverIn={() => setHoveredTestimonialId(t.id)}
+                onHoverOut={() => setHoveredTestimonialId(null)}
+                style={[
+                  styles.testimonialCard,
+                  isDesktop
+                    ? styles.testimonialCardDesktop
+                    : width < 640
+                    ? styles.testimonialCardMobile
+                    : styles.testimonialCardTablet,
+                  isHovered && styles.testimonialCardHovered,
+                ]}
+              >
+                {/* Top Row: Stars, Score & Verified Badge */}
+                <View style={styles.testimonialTopRow}>
+                  <View style={styles.testimonialRatingWrap}>
+                    <View style={styles.testimonialStars}>
+                      {[1, 2, 3, 4, 5].map((s) => (
+                        <Ionicons key={s} name="star" size={15} color="#F59E0B" />
+                      ))}
+                    </View>
+                    <Text style={styles.testimonialScoreText}>5.0</Text>
+                  </View>
+                  <View style={styles.verifiedBadge}>
+                    <Ionicons name="shield-checkmark" size={11} color="#059669" />
+                    <Text style={styles.verifiedBadgeText}>Verified Booking</Text>
+                  </View>
                 </View>
-              </View>
-            </View>
-          ))}
+
+                {/* Testimonial Quote */}
+                <View style={styles.testimonialBody}>
+                  <Text style={styles.testimonialQuoteMark}>“</Text>
+                  <Text style={styles.testimonialComment}>{t.comment}</Text>
+                </View>
+
+                {/* Booked Service Pill */}
+                {t.service ? (
+                  <View style={styles.testimonialServiceTag}>
+                    <Ionicons name="checkmark-circle-outline" size={13} color="#059669" />
+                    <Text style={styles.testimonialServiceText} numberOfLines={1}>
+                      Booked: {t.service}
+                    </Text>
+                  </View>
+                ) : null}
+
+                {/* Divider Line */}
+                <View style={styles.testimonialDivider} />
+
+                {/* Customer Profile & Recency */}
+                <View style={styles.testimonialUserRow}>
+                  <View style={styles.testimonialUserLeft}>
+                    <View style={styles.testimonialAvatarWrap}>
+                      <Image source={{ uri: t.avatar }} style={styles.testimonialAvatar} />
+                      <View style={styles.testimonialAvatarBadge}>
+                        <Ionicons name="checkmark" size={8} color="#FFFFFF" />
+                      </View>
+                    </View>
+                    <View style={styles.testimonialUserInfo}>
+                      <Text style={styles.testimonialName}>{t.name}</Text>
+                      <Text style={styles.testimonialRole} numberOfLines={1}>{t.role}</Text>
+                    </View>
+                  </View>
+                  <Text style={styles.testimonialTimeAgo}>{extra.timeAgo}</Text>
+                </View>
+              </Pressable>
+            );
+          })}
         </View>
       </View>
 
@@ -929,56 +1033,87 @@ const styles = StyleSheet.create({
   categoryGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 16,
+    gap: 12,
   },
   categoryCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 18,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
-  },
-  categoryCardDesktop: {
-    width: '31.5%',
-  },
-  categoryCardMobile: {
-    width: '47.5%',
-  },
-  categoryIconCircle: {
-    width: 52,
-    height: 52,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 14,
-  },
-  categoryName: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#0F172A',
-    marginBottom: 4,
-  },
-  categoryDesc: {
-    fontSize: 12,
-    color: '#64748B',
-    marginBottom: 12,
-  },
-  categoryFooter: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: '#F1F5F9',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    cursor: 'pointer',
+    position: 'relative',
+    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+  } as any,
+  categoryCardDesktop: {
+    width: '23.9%',
   },
-  categoryCount: {
-    fontSize: 12,
+  categoryCardMobile: {
+    width: '48.5%',
+  },
+  categoryCardMobileSmall: {
+    width: '100%',
+  },
+  categoryCardHovered: {
+    borderColor: '#CBD5E1',
+    transform: [{ translateY: -2 }],
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  categoryIconBox: {
+    width: 42,
+    height: 42,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+    flexShrink: 0,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    transition: 'all 0.2s ease',
+  } as any,
+  categoryIconBoxHovered: {
+    backgroundColor: '#F1F5F9',
+    borderColor: '#CBD5E1',
+  },
+  categoryContent: {
+    flex: 1,
+    justifyContent: 'center',
+    minWidth: 0,
+  },
+  categoryName: {
+    fontSize: 14,
     fontWeight: '700',
+    color: '#0F172A',
+    marginBottom: 3,
+    letterSpacing: -0.2,
+  },
+  categoryMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  categoryRatingText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#334155',
+    marginLeft: 3,
+  },
+  categoryMetaDivider: {
+    fontSize: 11,
+    color: '#CBD5E1',
+    marginHorizontal: 6,
+  },
+  categoryServiceCountText: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#64748B',
   },
   offersRow: {
     gap: 16,
@@ -1202,6 +1337,73 @@ const styles = StyleSheet.create({
     fontSize: 13,
     paddingHorizontal: 6,
   },
+  /* ══════════════ TESTIMONIALS SECTION ══════════════ */
+  testimonialHeaderPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: '#ECFDF5',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 100,
+    alignSelf: 'flex-start',
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+  },
+  testimonialHeaderPillText: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#059669',
+    letterSpacing: 0.5,
+  },
+  ratingSummaryBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    gap: 14,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  ratingSummaryScoreRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  ratingSummaryScore: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#0F172A',
+    marginLeft: 2,
+  },
+  ratingSummaryOutOf: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#64748B',
+  },
+  ratingSummaryDivider: {
+    width: 1,
+    height: 24,
+    backgroundColor: '#E2E8F0',
+  },
+  ratingSummaryTotal: {
+    fontSize: 12.5,
+    fontWeight: '700',
+    color: '#0F172A',
+  },
+  ratingSummarySub: {
+    fontSize: 11,
+    color: '#059669',
+    fontWeight: '600',
+  },
   testimonialsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -1209,51 +1411,168 @@ const styles = StyleSheet.create({
   },
   testimonialCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 20,
+    borderRadius: 18,
+    padding: 22,
     borderWidth: 1,
     borderColor: '#E2E8F0',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
     elevation: 2,
+    cursor: 'default',
+    transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+    justifyContent: 'space-between',
+  } as any,
+  testimonialCardHovered: {
+    borderColor: '#CBD5E1',
+    transform: [{ translateY: -4 }],
+    shadowOpacity: 0.09,
+    shadowRadius: 16,
+    elevation: 4,
   },
   testimonialCardDesktop: {
-    width: '31.5%',
+    width: '31.8%',
+  },
+  testimonialCardTablet: {
+    width: '48.5%',
   },
   testimonialCardMobile: {
     width: '100%',
   },
+  testimonialTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 14,
+  },
+  testimonialRatingWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
   testimonialStars: {
     flexDirection: 'row',
     gap: 2,
-    marginBottom: 12,
   },
-  testimonialComment: {
-    fontSize: 13,
-    lineHeight: 20,
-    color: '#334155',
-    marginBottom: 16,
-    fontStyle: 'italic',
-  },
-  testimonialUserRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  testimonialAvatar: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-  },
-  testimonialName: {
+  testimonialScoreText: {
     fontSize: 13,
     fontWeight: '800',
     color: '#0F172A',
   },
-  testimonialRole: {
+  verifiedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#ECFDF5',
+    paddingHorizontal: 8,
+    paddingVertical: 3.5,
+    borderRadius: 100,
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+  },
+  verifiedBadgeText: {
     fontSize: 11,
+    fontWeight: '700',
+    color: '#059669',
+  },
+  testimonialBody: {
+    position: 'relative',
+    marginBottom: 12,
+  },
+  testimonialQuoteMark: {
+    fontSize: 32,
+    lineHeight: 28,
+    fontWeight: '800',
+    color: '#CBD5E1',
+    marginBottom: 2,
+  },
+  testimonialComment: {
+    fontSize: 13.5,
+    lineHeight: 22,
+    color: '#1E293B',
+    fontWeight: '400',
+  },
+  testimonialServiceTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    marginBottom: 14,
+    alignSelf: 'flex-start',
+    maxWidth: '100%',
+  },
+  testimonialServiceText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#475569',
+    flexShrink: 1,
+  },
+  testimonialDivider: {
+    height: 1,
+    backgroundColor: '#F1F5F9',
+    marginBottom: 14,
+  },
+  testimonialUserRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  testimonialUserLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    flex: 1,
+    minWidth: 0,
+  },
+  testimonialAvatarWrap: {
+    position: 'relative',
+  },
+  testimonialAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    backgroundColor: '#E2E8F0',
+  },
+  testimonialAvatarBadge: {
+    position: 'absolute',
+    bottom: -2,
+    right: -2,
+    width: 15,
+    height: 15,
+    borderRadius: 8,
+    backgroundColor: '#059669',
+    borderWidth: 1.5,
+    borderColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  testimonialUserInfo: {
+    flex: 1,
+    minWidth: 0,
+  },
+  testimonialName: {
+    fontSize: 13.5,
+    fontWeight: '700',
+    color: '#0F172A',
+  },
+  testimonialRole: {
+    fontSize: 11.5,
     color: '#64748B',
+    marginTop: 1,
+  },
+  testimonialTimeAgo: {
+    fontSize: 11,
+    fontWeight: '500',
+    color: '#94A3B8',
+    marginLeft: 8,
+    flexShrink: 0,
   },
 });
