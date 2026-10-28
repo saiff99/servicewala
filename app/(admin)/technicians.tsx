@@ -541,6 +541,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 13,
     color: '#0F172A',
+    outlineStyle: 'none' as any,
   },
   filterTabsRow: {
     flexDirection: 'row',
@@ -788,6 +789,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     fontSize: 13,
     color: '#0F172A',
+    outlineStyle: 'none' as any,
   },
   modalFooter: {
     flexDirection: 'row',

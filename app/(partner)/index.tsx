@@ -884,6 +884,7 @@ const styles = StyleSheet.create({
     letterSpacing: 10,
     textAlign: 'center',
     color: '#0F172A',
+    outlineStyle: 'none' as any,
   },
   otpErrorMsg: {
     color: '#EF4444',

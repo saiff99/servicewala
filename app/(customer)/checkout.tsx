@@ -5,6 +5,7 @@ import {
   ScrollView,
   TextInput,
   TouchableOpacity,
+  Pressable,
   StyleSheet,
   useWindowDimensions,
 } from 'react-native';
@@ -22,6 +23,7 @@ export default function CheckoutScreen() {
     services,
     addToCart,
     removeFromCart,
+    updateCartQuantity,
     appliedPromo,
     promoDiscountPercent,
     applyPromo,
@@ -31,6 +33,7 @@ export default function CheckoutScreen() {
 
   // Wizard Step: 1 = Review Cart, 2 = Address, 3 = Schedule, 4 = Payment
   const [currentStep, setCurrentStep] = useState<number>(1);
+  const [hoveredDeleteId, setHoveredDeleteId] = useState<string | null>(null);
 
   // Promo input
   const [promoInput, setPromoInput] = useState('');
@@ -205,83 +208,132 @@ export default function CheckoutScreen() {
                 <Text style={styles.cardTitle}>Review Selected Services ({cartItems.length})</Text>
               </View>
 
-              <View style={styles.cartList}>
-                {cartItems.map(({ service, quantity }) => (
-                  <View key={service.id} style={styles.cartItemRow}>
-                    <View style={styles.cartItemInfo}>
-                      <Text style={styles.cartItemName}>{service.name}</Text>
-                      <Text style={styles.cartItemDuration}>
-                        {service.duration} • {currencyFormatter(service.price)} each
-                      </Text>
-                    </View>
-
-                    <View style={styles.cartItemControls}>
-                      <View style={styles.cartQtyPill}>
-                        <TouchableOpacity
-                          onPress={() => removeFromCart(service.id)}
-                          style={styles.cartQtyBtn}
-                        >
-                          <Ionicons name="remove" size={14} color="#FFFFFF" />
-                        </TouchableOpacity>
-                        <Text style={styles.cartQtyText}>{quantity}</Text>
-                        <TouchableOpacity
-                          onPress={() => addToCart(service.id)}
-                          style={styles.cartQtyBtn}
-                        >
-                          <Ionicons name="add" size={14} color="#FFFFFF" />
-                        </TouchableOpacity>
-                      </View>
-
-                      <Text style={styles.cartItemTotal}>
-                        {currencyFormatter(service.price * quantity)}
-                      </Text>
-                    </View>
+              {cartItems.length === 0 ? (
+                <View style={styles.emptyCartCard}>
+                  <View style={styles.emptyCartIconCircle}>
+                    <Ionicons name="cart-outline" size={32} color="#94A3B8" />
                   </View>
-                ))}
-              </View>
-
-              {/* Coupon Bar */}
-              <View style={styles.couponContainer}>
-                <View style={styles.couponInputRow}>
-                  <Ionicons name="pricetag-outline" size={18} color="#4F46E5" />
-                  <TextInput
-                    value={promoInput}
-                    onChangeText={setPromoInput}
-                    placeholder="Enter Coupon (e.g. FESTIVAL25, COOL599)"
-                    placeholderTextColor="#94A3B8"
-                    autoCapitalize="characters"
-                    style={styles.couponInput}
-                  />
-                  <TouchableOpacity onPress={handleApplyPromo} style={styles.applyCouponBtn}>
-                    <Text style={styles.applyCouponBtnText}>Apply</Text>
+                  <Text style={styles.emptyCartTitle}>Your cart is empty</Text>
+                  <Text style={styles.emptyCartSub}>
+                    You have removed all services. Explore our services catalog to add what you need.
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => router.push('/(customer)')}
+                    style={styles.exploreServicesBtn}
+                    activeOpacity={0.85}
+                  >
+                    <Ionicons name="arrow-back" size={16} color="#FFFFFF" />
+                    <Text style={styles.exploreServicesBtnText}>Explore Services</Text>
                   </TouchableOpacity>
                 </View>
+              ) : (
+                <>
+                  <View style={styles.cartList}>
+                    {cartItems.map(({ service, quantity }) => {
+                      const isHoveredDelete = hoveredDeleteId === service.id;
+                      return (
+                        <View key={service.id} style={styles.cartItemRow}>
+                          <View style={styles.cartItemInfo}>
+                            <Text style={styles.cartItemName}>{service.name}</Text>
+                            <Text style={styles.cartItemDuration}>
+                              {service.duration} • {currencyFormatter(service.price)} each
+                            </Text>
+                          </View>
 
-                {appliedPromo && (
-                  <View style={styles.appliedPromoBadge}>
-                    <Ionicons name="checkmark-circle" size={16} color="#10B981" />
-                    <Text style={styles.appliedPromoText}>
-                      {"'" + appliedPromo + "'"} applied ({promoDiscountPercent}% savings)
-                    </Text>
-                    <TouchableOpacity onPress={removePromo} style={styles.removePromoBtn}>
-                      <Ionicons name="close-circle" size={16} color="#EF4444" />
-                    </TouchableOpacity>
+                          <View style={styles.cartItemControls}>
+                            <View style={styles.cartQtyPill}>
+                              <TouchableOpacity
+                                onPress={() => removeFromCart(service.id)}
+                                style={styles.cartQtyBtn}
+                                accessibilityLabel="Decrease quantity"
+                              >
+                                <Ionicons
+                                  name={quantity <= 1 ? 'trash-outline' : 'remove'}
+                                  size={14}
+                                  color="#FFFFFF"
+                                />
+                              </TouchableOpacity>
+                              <Text style={styles.cartQtyText}>{quantity}</Text>
+                              <TouchableOpacity
+                                onPress={() => addToCart(service.id)}
+                                style={styles.cartQtyBtn}
+                                accessibilityLabel="Increase quantity"
+                              >
+                                <Ionicons name="add" size={14} color="#FFFFFF" />
+                              </TouchableOpacity>
+                            </View>
+
+                            <Text style={styles.cartItemTotal}>
+                              {currencyFormatter(service.price * quantity)}
+                            </Text>
+
+                            <Pressable
+                              onPress={() => updateCartQuantity(service.id, 0)}
+                              onHoverIn={() => setHoveredDeleteId(service.id)}
+                              onHoverOut={() => setHoveredDeleteId(null)}
+                              style={[
+                                styles.cartItemDeleteBtn,
+                                isHoveredDelete && styles.cartItemDeleteBtnHovered,
+                              ]}
+                              accessibilityLabel={`Remove ${service.name}`}
+                              accessibilityRole="button"
+                            >
+                              <Ionicons
+                                name="trash-outline"
+                                size={15}
+                                color={isHoveredDelete ? '#EF4444' : '#94A3B8'}
+                              />
+                            </Pressable>
+                          </View>
+                        </View>
+                      );
+                    })}
                   </View>
-                )}
 
-                {promoMessage && !appliedPromo && (
-                  <Text style={styles.promoErrorText}>{promoMessage}</Text>
-                )}
-              </View>
+                  {/* Coupon Bar */}
+                  <View style={styles.couponContainer}>
+                    <View style={styles.couponInputRow}>
+                      <Ionicons name="pricetag-outline" size={18} color="#4F46E5" />
+                      <TextInput
+                        value={promoInput}
+                        onChangeText={setPromoInput}
+                        placeholder="Enter Coupon (e.g. FESTIVAL25, COOL599)"
+                        placeholderTextColor="#94A3B8"
+                        autoCapitalize="characters"
+                        style={styles.couponInput}
+                      />
+                      <TouchableOpacity onPress={handleApplyPromo} style={styles.applyCouponBtn}>
+                        <Text style={styles.applyCouponBtnText}>Apply</Text>
+                      </TouchableOpacity>
+                    </View>
 
-              <TouchableOpacity
-                onPress={() => setCurrentStep(2)}
-                style={styles.nextStepBtn}
-                activeOpacity={0.85}
-              >
-                <Text style={styles.nextStepBtnText}>Proceed to Address</Text>
-                <Ionicons name="arrow-forward" size={16} color="#FFFFFF" />
-              </TouchableOpacity>
+                    {appliedPromo && (
+                      <View style={styles.appliedPromoBadge}>
+                        <Ionicons name="checkmark-circle" size={16} color="#10B981" />
+                        <Text style={styles.appliedPromoText}>
+                          {"'" + appliedPromo + "'"} applied ({promoDiscountPercent}% savings)
+                        </Text>
+                        <TouchableOpacity onPress={removePromo} style={styles.removePromoBtn}>
+                          <Ionicons name="close-circle" size={16} color="#EF4444" />
+                        </TouchableOpacity>
+                      </View>
+                    )}
+
+                    {promoMessage && !appliedPromo && (
+                      <Text style={styles.promoErrorText}>{promoMessage}</Text>
+                    )}
+                  </View>
+
+                  <TouchableOpacity
+                    onPress={() => setCurrentStep(2)}
+                    style={styles.nextStepBtn}
+                    activeOpacity={0.85}
+                  >
+                    <Text style={styles.nextStepBtnText}>Proceed to Address</Text>
+                    <Ionicons name="arrow-forward" size={16} color="#FFFFFF" />
+                  </TouchableOpacity>
+                </>
+              )}
             </View>
           )}
 
@@ -853,6 +905,65 @@ const styles = StyleSheet.create({
     minWidth: 64,
     textAlign: 'right',
   },
+  cartItemDeleteBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+  } as any,
+  cartItemDeleteBtnHovered: {
+    backgroundColor: '#FEF2F2',
+    borderColor: '#FCA5A5',
+  },
+  emptyCartCard: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 36,
+    paddingHorizontal: 20,
+  },
+  emptyCartIconCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: '#F1F5F9',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 14,
+  },
+  emptyCartTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#0F172A',
+    marginBottom: 6,
+  },
+  emptyCartSub: {
+    fontSize: 13,
+    color: '#64748B',
+    textAlign: 'center',
+    maxWidth: 320,
+    lineHeight: 19,
+    marginBottom: 20,
+  },
+  exploreServicesBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: THEME.colors.primary,
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    borderRadius: 10,
+  },
+  exploreServicesBtnText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '700',
+  },
   couponContainer: {
     backgroundColor: '#F8FAFC',
     borderRadius: 12,
@@ -872,6 +983,7 @@ const styles = StyleSheet.create({
     color: '#0F172A',
     fontWeight: '600',
     height: 40,
+    outlineStyle: 'none' as any,
   },
   applyCouponBtn: {
     backgroundColor: THEME.colors.primary,
@@ -961,6 +1073,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     fontSize: 14,
     color: '#0F172A',
+    outlineStyle: 'none' as any,
   },
   slotSectionHeading: {
     fontSize: 13,

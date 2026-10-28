@@ -485,6 +485,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 13,
     color: '#0F172A',
+    outlineStyle: 'none' as any,
   },
   catScroll: {
     gap: 8,
@@ -699,6 +700,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     fontSize: 13,
     color: '#0F172A',
+    outlineStyle: 'none' as any,
   },
   categoryRadioWrap: {
     flexDirection: 'row',

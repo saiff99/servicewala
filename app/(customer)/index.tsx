@@ -267,8 +267,7 @@ export default function CustomerHomeScreen() {
                 onHoverOut={() => setHoveredStripId(null)}
                 style={[
                   styles.iconStripItem,
-                  isSelected && styles.iconStripItemActive,
-                  isHovered && styles.iconStripItemHovered,
+                  isDesktop ? styles.iconStripItemDesktop : styles.iconStripItemMobile,
                 ]}
               >
                 <View
@@ -285,7 +284,7 @@ export default function CustomerHomeScreen() {
                       isSelected
                         ? '#FFFFFF'
                         : isHovered
-                        ? '#991B1B'
+                        ? '#0F172A'
                         : '#475569'
                     }
                   />
@@ -301,11 +300,16 @@ export default function CustomerHomeScreen() {
                   {item.label}
                 </Text>
                 <View style={styles.iconIndicatorWrap}>
-                  {isSelected ? (
-                    <View style={styles.iconActiveDot} />
-                  ) : isHovered ? (
-                    <View style={styles.iconHoverBar} />
-                  ) : null}
+                  <View
+                    style={[
+                      styles.iconIndicatorBar,
+                      isSelected
+                        ? styles.iconIndicatorActive
+                        : isHovered
+                        ? styles.iconIndicatorHovered
+                        : styles.iconIndicatorHidden,
+                    ]}
+                  />
                 </View>
               </Pressable>
             );
@@ -317,22 +321,22 @@ export default function CustomerHomeScreen() {
       <View style={styles.trustStripBar}>
         <View style={styles.trustStripInner}>
           <View style={styles.trustStripItem}>
-            <Ionicons name="star" size={14} color="#D97706" />
+            <Ionicons name="star" size={14} color="#0F172A" />
             <Text style={styles.trustStripText}>4.85 Avg Rating</Text>
           </View>
           <View style={styles.trustStripDivider} />
           <View style={styles.trustStripItem}>
-            <Ionicons name="shield-checkmark" size={14} color="#059669" />
+            <Ionicons name="shield-checkmark" size={14} color="#0F172A" />
             <Text style={styles.trustStripText}>100% Background-Verified Pros</Text>
           </View>
           <View style={styles.trustStripDivider} />
           <View style={styles.trustStripItem}>
-            <Ionicons name="time" size={14} color="#991B1B" />
+            <Ionicons name="time" size={14} color="#0F172A" />
             <Text style={styles.trustStripText}>60-Min Doorstep Guarantee</Text>
           </View>
           <View style={styles.trustStripDivider} />
           <View style={styles.trustStripItem}>
-            <Ionicons name="card" size={14} color="#2563EB" />
+            <Ionicons name="card" size={14} color="#0F172A" />
             <Text style={styles.trustStripText}>Pay After Service</Text>
           </View>
         </View>
@@ -889,20 +893,17 @@ const styles = StyleSheet.create({
   iconStripItem: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 14,
-    minWidth: 72,
     height: 84,
     cursor: 'pointer',
     position: 'relative',
-    transition: 'all 0.22s cubic-bezier(0.4, 0, 0.2, 1)',
   } as any,
-  iconStripItemActive: {
-    backgroundColor: 'transparent',
+  iconStripItemDesktop: {
+    width: 104,
+    flexShrink: 0,
   },
-  iconStripItemHovered: {
-    backgroundColor: 'transparent',
+  iconStripItemMobile: {
+    width: 84,
+    flexShrink: 0,
   },
   iconStripIconWrap: {
     width: 46,
@@ -911,71 +912,77 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 6,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#FFFFFF',
     borderWidth: 1.5,
     borderColor: '#E2E8F0',
-    transition: 'all 0.22s cubic-bezier(0.4, 0, 0.2, 1)',
+    transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
   } as any,
   iconStripIconWrapActive: {
-    backgroundColor: '#991B1B',
-    borderColor: '#991B1B',
+    backgroundColor: '#0F172A',
+    borderColor: '#0F172A',
     transform: [{ translateY: -2 }],
-    shadowColor: '#991B1B',
+    shadowColor: '#0F172A',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.28,
+    shadowOpacity: 0.20,
     shadowRadius: 8,
     elevation: 4,
   },
   iconStripIconWrapHovered: {
-    backgroundColor: '#FEF2F2',
-    borderColor: '#FCA5A5',
-    transform: [{ translateY: -3 }, { scale: 1.05 }],
-    shadowColor: '#991B1B',
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.16,
-    shadowRadius: 10,
-    elevation: 4,
+    backgroundColor: '#F8FAFC',
+    borderColor: '#0F172A',
+    transform: [{ translateY: -3 }],
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 3,
   },
   iconStripLabel: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#475569',
+    color: '#64748B',
+    textAlign: 'center',
     transition: 'color 0.2s ease',
   } as any,
   iconStripLabelActive: {
-    color: '#991B1B',
-    fontWeight: '700',
+    color: '#0F172A',
   },
   iconStripLabelHovered: {
     color: '#0F172A',
-    fontWeight: '600',
   },
   iconIndicatorWrap: {
     height: 4,
     marginTop: 4,
     alignItems: 'center',
     justifyContent: 'center',
+    width: '100%',
   },
-  iconActiveDot: {
-    width: 18,
+  iconIndicatorBar: {
     height: 3,
     borderRadius: 2,
-    backgroundColor: '#991B1B',
     transition: 'all 0.2s ease',
   } as any,
-  iconHoverBar: {
+  iconIndicatorActive: {
+    width: 18,
+    backgroundColor: '#0F172A',
+    opacity: 1,
+  },
+  iconIndicatorHovered: {
     width: 12,
-    height: 2.5,
-    borderRadius: 1.5,
-    backgroundColor: '#F87171',
-    transition: 'all 0.2s ease',
-  } as any,
+    backgroundColor: '#94A3B8',
+    opacity: 1,
+  },
+  iconIndicatorHidden: {
+    width: 0,
+    backgroundColor: 'transparent',
+    opacity: 0,
+  },
 
   /* ══════════════ SUBTLE TRUST STRIP ══════════════ */
   trustStripBar: {
     backgroundColor: '#F8FAFC',
     borderBottomWidth: 1,
-    borderBottomColor: '#F1F5F9',
+    borderBottomColor: '#E2E8F0',
     paddingVertical: 10,
     paddingHorizontal: 20,
   },
@@ -997,12 +1004,12 @@ const styles = StyleSheet.create({
   trustStripText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#475569',
+    color: '#0F172A',
   },
   trustStripDivider: {
     width: 1,
     height: 14,
-    backgroundColor: '#CBD5E1',
+    backgroundColor: '#E2E8F0',
   },
   sectionWrap: {
     maxWidth: 1200,

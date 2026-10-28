@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   TextInput,
   StyleSheet,
   useWindowDimensions,
+  Platform,
 } from 'react-native';
 import { Slot, router, usePathname } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -50,18 +51,76 @@ export default function CustomerLayout() {
   const { cart, orders } = useEcosystemStore();
 
   const [headerSearch, setHeaderSearch] = useState('');
-  const [selectedLocation, setSelectedLocation] = useState('Old Ballygunge Road, Kolkata');
+  const [selectedLocation, setSelectedLocation] = useState('Kolkata');
+  const [locationSearchQuery, setLocationSearchQuery] = useState('');
   const [showLocationPicker, setShowLocationPicker] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [hoveredNav, setHoveredNav] = useState<string | null>(null);
 
+  const locationDropdownRef = useRef<any>(null);
+  const profileDropdownRef = useRef<any>(null);
+  const mobileLocationRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (Platform.OS === 'web' && typeof document !== 'undefined') {
+      const handleOutsideClick = (event: MouseEvent | TouchEvent) => {
+        const target = event.target as any;
+        if (showLocationPicker) {
+          const isInsideDesktop =
+            locationDropdownRef.current &&
+            locationDropdownRef.current.contains &&
+            locationDropdownRef.current.contains(target);
+          const isInsideMobile =
+            mobileLocationRef.current &&
+            mobileLocationRef.current.contains &&
+            mobileLocationRef.current.contains(target);
+          if (!isInsideDesktop && !isInsideMobile) {
+            setShowLocationPicker(false);
+            setLocationSearchQuery('');
+          }
+        }
+        if (showProfileMenu) {
+          const isInsideProfile =
+            profileDropdownRef.current &&
+            profileDropdownRef.current.contains &&
+            profileDropdownRef.current.contains(target);
+          if (!isInsideProfile) {
+            setShowProfileMenu(false);
+          }
+        }
+      };
+
+      const handleKeyDown = (event: KeyboardEvent) => {
+        if (event.key === 'Escape') {
+          setShowLocationPicker(false);
+          setShowProfileMenu(false);
+          setLocationSearchQuery('');
+        }
+      };
+
+      if (showLocationPicker || showProfileMenu) {
+        document.addEventListener('mousedown', handleOutsideClick);
+        document.addEventListener('touchstart', handleOutsideClick);
+        document.addEventListener('keydown', handleKeyDown);
+        return () => {
+          document.removeEventListener('mousedown', handleOutsideClick);
+          document.removeEventListener('touchstart', handleOutsideClick);
+          document.removeEventListener('keydown', handleKeyDown);
+        };
+      }
+    }
+  }, [showLocationPicker, showProfileMenu]);
+
   const CITIES = [
-    'Old Ballygunge Road, Kolkata',
-    'Indiranagar, Bengaluru',
-    'Bandra West, Mumbai',
-    'Connaught Place, New Delhi',
-    'Hitec City, Hyderabad',
+    'Kolkata',
+    'Delhi',
+    'Mumbai',
+    'Chennai',
   ];
+
+  const filteredCities = CITIES.filter((city) =>
+    city.toLowerCase().includes(locationSearchQuery.trim().toLowerCase())
+  );
 
   const totalCartCount = Object.values(cart).reduce((a, b) => a + b, 0);
 
@@ -127,7 +186,7 @@ export default function CustomerLayout() {
             {/* Center-Right: Location Selector + Search Bar */}
             <View style={styles.centerInputsGroup}>
               {/* Location Selector Box */}
-              <View style={styles.locationDropdownWrap}>
+              <View ref={locationDropdownRef} style={styles.locationDropdownWrap}>
                 <TouchableOpacity
                   onPress={() => setShowLocationPicker(!showLocationPicker)}
                   style={styles.locationBox}
@@ -143,12 +202,31 @@ export default function CustomerLayout() {
                 {/* Dropdown Menu */}
                 {showLocationPicker && (
                   <View style={styles.locationDropdownMenu}>
-                    {CITIES.map((city) => (
+                    {/* Search Input inside Dropdown */}
+                    <View style={styles.locationSearchInputWrap}>
+                      <Ionicons name="search-outline" size={13} color="#94A3B8" />
+                      <TextInput
+                        value={locationSearchQuery}
+                        onChangeText={setLocationSearchQuery}
+                        placeholder="Search city..."
+                        placeholderTextColor="#94A3B8"
+                        style={styles.locationSearchInput}
+                        autoFocus
+                      />
+                      {locationSearchQuery ? (
+                        <TouchableOpacity onPress={() => setLocationSearchQuery('')}>
+                          <Ionicons name="close-circle" size={14} color="#94A3B8" />
+                        </TouchableOpacity>
+                      ) : null}
+                    </View>
+
+                    {filteredCities.map((city) => (
                       <TouchableOpacity
                         key={city}
                         onPress={() => {
                           setSelectedLocation(city);
                           setShowLocationPicker(false);
+                          setLocationSearchQuery('');
                         }}
                         style={[
                           styles.locationMenuItem,
@@ -170,6 +248,22 @@ export default function CustomerLayout() {
                         </Text>
                       </TouchableOpacity>
                     ))}
+
+                    {filteredCities.length === 0 && (
+                      <TouchableOpacity
+                        onPress={() => {
+                          setSelectedLocation(locationSearchQuery);
+                          setShowLocationPicker(false);
+                          setLocationSearchQuery('');
+                        }}
+                        style={styles.locationMenuItem}
+                      >
+                        <Ionicons name="add-circle-outline" size={14} color="#991B1B" />
+                        <Text style={styles.locationCustomAddText} numberOfLines={1}>
+                          {'Use "' + locationSearchQuery + '"'}
+                        </Text>
+                      </TouchableOpacity>
+                    )}
                   </View>
                 )}
               </View>
@@ -214,7 +308,7 @@ export default function CustomerLayout() {
               </TouchableOpacity>
 
               {/* Profile Button with Dropdown containing My Bookings */}
-              <View style={styles.profileWrapper}>
+              <View ref={profileDropdownRef} style={styles.profileWrapper}>
                 <TouchableOpacity
                   onPress={() => {
                     setShowProfileMenu(!showProfileMenu);
@@ -337,16 +431,83 @@ export default function CustomerLayout() {
             </View>
           </TouchableOpacity>
 
-          <TouchableOpacity
-            onPress={() => setShowLocationPicker(!showLocationPicker)}
-            style={styles.mobileLocationPill}
-          >
-            <Ionicons name="location-outline" size={13} color="#475569" />
-            <Text style={styles.mobileLocationText} numberOfLines={1}>
-              {selectedLocation.split(',')[0]}
-            </Text>
-            <Ionicons name="chevron-down" size={12} color="#64748B" />
-          </TouchableOpacity>
+          <View ref={mobileLocationRef} style={styles.mobileLocationWrap}>
+            <TouchableOpacity
+              onPress={() => setShowLocationPicker(!showLocationPicker)}
+              style={styles.mobileLocationPill}
+            >
+              <Ionicons name="location-outline" size={13} color="#475569" />
+              <Text style={styles.mobileLocationText} numberOfLines={1}>
+                {selectedLocation}
+              </Text>
+              <Ionicons name="chevron-down" size={12} color="#64748B" />
+            </TouchableOpacity>
+
+            {showLocationPicker && (
+              <View style={styles.mobileLocationDropdownMenu}>
+                <View style={styles.locationSearchInputWrap}>
+                  <Ionicons name="search-outline" size={13} color="#94A3B8" />
+                  <TextInput
+                    value={locationSearchQuery}
+                    onChangeText={setLocationSearchQuery}
+                    placeholder="Search city..."
+                    placeholderTextColor="#94A3B8"
+                    style={styles.locationSearchInput}
+                  />
+                  {locationSearchQuery ? (
+                    <TouchableOpacity onPress={() => setLocationSearchQuery('')}>
+                      <Ionicons name="close-circle" size={14} color="#94A3B8" />
+                    </TouchableOpacity>
+                  ) : null}
+                </View>
+
+                {filteredCities.map((city) => (
+                  <TouchableOpacity
+                    key={city}
+                    onPress={() => {
+                      setSelectedLocation(city);
+                      setShowLocationPicker(false);
+                      setLocationSearchQuery('');
+                    }}
+                    style={[
+                      styles.locationMenuItem,
+                      selectedLocation === city && styles.locationMenuItemActive,
+                    ]}
+                  >
+                    <Ionicons
+                      name="location-sharp"
+                      size={14}
+                      color={selectedLocation === city ? '#991B1B' : '#94A3B8'}
+                    />
+                    <Text
+                      style={[
+                        styles.locationMenuText,
+                        selectedLocation === city && styles.locationMenuTextActive,
+                      ]}
+                    >
+                      {city}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+
+                {filteredCities.length === 0 && (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setSelectedLocation(locationSearchQuery);
+                      setShowLocationPicker(false);
+                      setLocationSearchQuery('');
+                    }}
+                    style={styles.locationMenuItem}
+                  >
+                    <Ionicons name="add-circle-outline" size={14} color="#991B1B" />
+                    <Text style={styles.locationCustomAddText} numberOfLines={1}>
+                      {'Use "' + locationSearchQuery + '"'}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            )}
+          </View>
 
           <View style={styles.mobileActionButtons}>
             <TouchableOpacity
@@ -639,6 +800,33 @@ const styles = StyleSheet.create({
     elevation: 8,
     zIndex: 200,
   },
+  locationSearchInputWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#F8FAFC',
+    marginHorizontal: 8,
+    marginTop: 2,
+    marginBottom: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  locationSearchInput: {
+    flex: 1,
+    fontSize: 12.5,
+    color: '#0F172A',
+    padding: 0,
+    outlineStyle: 'none' as any,
+  },
+  locationCustomAddText: {
+    fontSize: 12.5,
+    color: '#991B1B',
+    fontWeight: '600',
+    fontStyle: 'italic',
+  },
   locationMenuItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -676,6 +864,7 @@ const styles = StyleSheet.create({
     color: '#0F172A',
     fontWeight: '500',
     paddingVertical: 0,
+    outlineStyle: 'none' as any,
   },
   rightActionsGroup: {
     flexDirection: 'row',
@@ -836,6 +1025,7 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#F0F0F0',
+    zIndex: 50,
   },
   mobileLogoRow: {
     flexDirection: 'row',
@@ -860,6 +1050,10 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     color: '#000000',
   },
+  mobileLocationWrap: {
+    position: 'relative',
+    zIndex: 60,
+  },
   mobileLocationPill: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -871,6 +1065,23 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     gap: 4,
     maxWidth: 130,
+  },
+  mobileLocationDropdownMenu: {
+    position: 'absolute',
+    top: 36,
+    left: 0,
+    width: 190,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    paddingVertical: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    elevation: 8,
+    zIndex: 300,
   },
   mobileLocationText: {
     fontSize: 12,

@@ -552,6 +552,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '800',
     color: '#0F172A',
+    outlineStyle: 'none' as any,
   },
   messageText: {
     fontSize: 12,
