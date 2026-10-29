@@ -8,13 +8,11 @@ import {
   CategoriesGridSection,
   SpotlightOffersStrip,
   PopularServicesSection,
-  QualityShowcaseSection,
   WhyChooseSection,
   HowItWorksSection,
   TestimonialsSection,
   BrandMarqueeSection,
   FaqSection,
-  AppDownloadBanner,
   PartnerBanner,
   HomeMegaFooter,
 } from '../../src/components/home';
@@ -82,10 +80,7 @@ export default function CustomerHomeScreen() {
           onClearFilter={() => setActiveQuickFilter(null)}
         />
 
-        {/* 7. Before & After Quality Transformation Showcase */}
-        <QualityShowcaseSection />
-
-        {/* 8. Why Choose Servicewala & ₹10,000 Protection Promise */}
+        {/* 7. Why Choose Servicewala & ₹10,000 Protection Promise */}
         <WhyChooseSection />
 
         {/* 9. How It Works (3 Effortless Steps) */}
@@ -100,10 +95,7 @@ export default function CustomerHomeScreen() {
         {/* 12. Frequently Asked Questions Accordion */}
         <FaqSection />
 
-        {/* 13. Mobile App Download Showcase Banner */}
-        <AppDownloadBanner />
-
-        {/* 14. Partner Recruitment CTA Banner */}
+        {/* 13. Partner Recruitment CTA Banner */}
         <PartnerBanner />
 
         {/* 15. Luxury Multi-Column Mega Footer */}

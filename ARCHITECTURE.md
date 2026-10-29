@@ -129,16 +129,14 @@ This calculation automatically updates:
 - `CategoriesGridSection.tsx`: 8-category primary grid with rating stats and service counts.
 - `SpotlightOffersStrip.tsx`: Horizontal seasonal deal cards with one-tap promo application.
 - `PopularServicesSection.tsx`: Search and category-filtered services grid with add-to-cart controls.
-- `QualityShowcaseSection.tsx`: Before & after quality comparison with thermal/airflow deltas.
 - `WhyChooseSection.tsx`: 4 trust pillars + integration of the Home Protection Promise card.
 - `HomeProtectionCard.tsx`: Dedicated ₹10,000 property damage coverage shield guarantee.
 - `HowItWorksSection.tsx`: 3-step effortless booking process visualization.
 - `TestimonialsSection.tsx`: 4.9★ verified customer reviews with service badges and recency tags.
 - `BrandMarqueeSection.tsx`: Continuous CSS-animated infinite multi-brand marquee for 22+ OEM brands.
 - `FaqSection.tsx`: Interactive accordion covering arrival timing, technician verification, pricing, and warranty.
-- `AppDownloadBanner.tsx`: Mobile app showcase with smartphone mockup, live tracking frame, and QR code.
 - `PartnerBanner.tsx`: Fleet recruitment banner with high earnings highlight and one-tap join CTA.
-- `HomeMegaFooter.tsx`: Multi-column enterprise footer with trust ribbon, portal navigation, and legal links.
+- `HomeMegaFooter.tsx`: Multi-column enterprise footer with trust ribbon, integrated Google Play / App Store / QR scan badges, and legal links.
 - `FloatingHelpCapsule.tsx`: Sticky quick-help diagnostic assistant with smart problem diagnosis and instant WhatsApp/callback.
 
 ### Partner Portal (`app/(partner)`)

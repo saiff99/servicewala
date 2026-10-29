@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,8 +9,9 @@ import {
   TextInput,
   Platform,
   useWindowDimensions,
+  Keyboard,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, usePathname } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { THEME, currencyFormatter } from '../../constants/theme';
 import { useEcosystemStore } from '../../store/useEcosystemStore';
@@ -78,13 +79,56 @@ export default function FloatingHelpCapsule({ onScrollToServices }: FloatingHelp
   const { width, height } = useWindowDimensions();
   const isDesktop = width >= THEME.breakpoints.desktopMin;
   const router = useRouter();
+  const pathname = usePathname();
   const { cart, addToCart } = useEcosystemStore();
+
+  const isProductPage = Boolean(pathname && pathname.includes('/service'));
+
+  const scrollViewRef = useRef<any>(null);
+  const phoneInputRef = useRef<any>(null);
+  const [isPhoneFocused, setIsPhoneFocused] = useState(false);
 
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
   const [selectedHelpIssueId, setSelectedHelpIssueId] = useState<string | null>(null);
   const [callbackPhone, setCallbackPhone] = useState('');
   const [isCallbackSubmitted, setIsCallbackSubmitted] = useState(false);
   const [isFloatingPillHovered, setIsFloatingPillHovered] = useState(false);
+
+  useEffect(() => {
+    const hideSub = Keyboard.addListener('keyboardDidHide', () => {
+      setIsPhoneFocused(false);
+    });
+    return () => {
+      hideSub.remove();
+    };
+  }, []);
+
+  const handlePhoneFocus = () => {
+    setIsPhoneFocused(true);
+    setTimeout(() => {
+      scrollViewRef.current?.scrollToEnd({ animated: true });
+    }, 120);
+  };
+
+  const handlePhoneBlur = () => {
+    setIsPhoneFocused(false);
+  };
+
+  const handleDismissKeyboard = () => {
+    phoneInputRef.current?.blur();
+    Keyboard.dismiss();
+    setIsPhoneFocused(false);
+  };
+
+  const handleBackdropPress = () => {
+    if (isPhoneFocused) {
+      handleDismissKeyboard();
+      return;
+    }
+    setIsHelpModalOpen(false);
+    setSelectedHelpIssueId(null);
+    setIsCallbackSubmitted(false);
+  };
 
   const selectedHelpIssue = useMemo(
     () => QUICK_HELP_ISSUES.find((q) => q.id === selectedHelpIssueId) || null,
@@ -105,11 +149,7 @@ export default function FloatingHelpCapsule({ onScrollToServices }: FloatingHelp
       {isHelpModalOpen && (
         <Pressable
           style={styles.helpBackdrop}
-          onPress={() => {
-            setIsHelpModalOpen(false);
-            setSelectedHelpIssueId(null);
-            setIsCallbackSubmitted(false);
-          }}
+          onPress={handleBackdropPress}
           accessibilityLabel="Close help modal backdrop"
         />
       )}
@@ -117,7 +157,12 @@ export default function FloatingHelpCapsule({ onScrollToServices }: FloatingHelp
       <View
         style={[
           styles.floatingHelpContainer,
-          !isDesktop && styles.floatingHelpContainerMobile,
+          !isDesktop &&
+            (isPhoneFocused
+              ? styles.floatingHelpContainerKeyboardMobile
+              : isProductPage
+              ? styles.floatingHelpContainerProductMobile
+              : styles.floatingHelpContainerMobile),
         ]}
       >
         {/* Flyout Consultation Panel (When Open) */}
@@ -131,7 +176,9 @@ export default function FloatingHelpCapsule({ onScrollToServices }: FloatingHelp
                     styles.helpFlyoutCardMobile,
                     {
                       width: Math.min(width - 32, 380),
-                      maxHeight: Math.min(height - 140, 520),
+                      maxHeight: isPhoneFocused
+                        ? Math.min(height - 350, 400)
+                        : Math.min(height - (isProductPage ? 190 : 120), 565),
                     },
                   ],
             ]}
@@ -170,9 +217,11 @@ export default function FloatingHelpCapsule({ onScrollToServices }: FloatingHelp
 
           {/* Scrollable / Interactive Flyout Body */}
           <ScrollView
+            ref={scrollViewRef}
             style={styles.helpFlyoutScroll}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.helpFlyoutScrollContent}
+            keyboardShouldPersistTaps="handled"
           >
             {/* If an issue is selected: Show Smart Diagnosis Result */}
             {selectedHelpIssue ? (
@@ -279,8 +328,20 @@ export default function FloatingHelpCapsule({ onScrollToServices }: FloatingHelp
             {/* Instant 2-Minute Callback Form */}
             <View style={styles.helpCallbackCard}>
               <View style={styles.helpCallbackHeader}>
-                <Ionicons name="call-outline" size={14} color="#059669" />
-                <Text style={styles.helpCallbackTitle}>Request Free Callback in &lt; 2 Mins</Text>
+                <View style={styles.helpCallbackHeaderLeft}>
+                  <Ionicons name="call-outline" size={14} color="#059669" />
+                  <Text style={styles.helpCallbackTitle}>Request Free Callback in &lt; 2 Mins</Text>
+                </View>
+                {isPhoneFocused && (
+                  <TouchableOpacity
+                    onPress={handleDismissKeyboard}
+                    style={styles.helpKeyboardDismissBtn}
+                    activeOpacity={0.8}
+                    accessibilityLabel="Dismiss keyboard"
+                  >
+                    <Text style={styles.helpKeyboardDismissText}>Done ✓</Text>
+                  </TouchableOpacity>
+                )}
               </View>
 
               {isCallbackSubmitted ? (
@@ -293,11 +354,16 @@ export default function FloatingHelpCapsule({ onScrollToServices }: FloatingHelp
               ) : (
                 <View style={styles.helpCallbackForm}>
                   <TextInput
+                    ref={phoneInputRef}
                     value={callbackPhone}
                     onChangeText={setCallbackPhone}
+                    onFocus={handlePhoneFocus}
+                    onBlur={handlePhoneBlur}
                     placeholder="Enter 10-digit mobile number"
                     placeholderTextColor="#94A3B8"
                     keyboardType="phone-pad"
+                    returnKeyType="done"
+                    onSubmitEditing={handleDismissKeyboard}
                     style={styles.helpCallbackInput}
                     maxLength={10}
                   />
@@ -305,6 +371,7 @@ export default function FloatingHelpCapsule({ onScrollToServices }: FloatingHelp
                     onPress={() => {
                       if (callbackPhone.trim().length >= 10) {
                         setIsCallbackSubmitted(true);
+                        handleDismissKeyboard();
                       }
                     }}
                     disabled={callbackPhone.trim().length < 10}
@@ -339,18 +406,20 @@ export default function FloatingHelpCapsule({ onScrollToServices }: FloatingHelp
         onHoverOut={() => setIsFloatingPillHovered(false)}
         style={[
           styles.floatingPillBtn,
+          !isDesktop && styles.floatingPillBtnMobile,
           isHelpModalOpen && styles.floatingPillBtnActive,
           isFloatingPillHovered && styles.floatingPillBtnHovered,
         ]}
+        accessibilityLabel={isHelpModalOpen ? 'Close Help' : 'Need Help Chat'}
       >
         {isHelpModalOpen ? (
           <>
-            <Ionicons name="close" size={18} color="#FFFFFF" />
-            <Text style={styles.floatingPillText}>Close Help</Text>
+            <Ionicons name="close" size={isDesktop ? 18 : 20} color="#FFFFFF" />
+            {isDesktop && <Text style={styles.floatingPillText}>Close Help</Text>}
           </>
-        ) : (
+        ) : isDesktop ? (
           <>
-            {/* Pulsing Green Status Beacon */}
+            {/* Desktop Full Pill */}
             <View style={styles.floatingBeaconWrap}>
               <View style={styles.floatingBeaconDot} />
             </View>
@@ -358,12 +427,18 @@ export default function FloatingHelpCapsule({ onScrollToServices }: FloatingHelp
             <Ionicons name="chatbubbles" size={16} color="#FFFFFF" />
 
             <Text style={styles.floatingPillText}>
-              {isDesktop ? 'Need Help Choosing? Chat with Tech' : 'Need Help?'}
+              Need Help Choosing? Chat with Tech
             </Text>
 
             <View style={styles.floatingLiveBadge}>
               <Text style={styles.floatingLiveBadgeText}>LIVE</Text>
             </View>
+          </>
+        ) : (
+          /* Mobile Minimal Icon Button (No Text, Tiny Footprint) */
+          <>
+            <Ionicons name="chatbubbles" size={20} color="#FFFFFF" />
+            <View style={styles.mobileFloatingBeaconDot} />
           </>
         )}
       </Pressable>
@@ -395,9 +470,18 @@ const styles = StyleSheet.create({
     right: 24,
     zIndex: 100005,
     alignItems: 'flex-end',
-  },
+    transition: 'bottom 0.28s cubic-bezier(0.16, 1, 0.3, 1)',
+  } as any,
   floatingHelpContainerMobile: {
-    bottom: 84, // Clears mobile bottom navigation bar
+    bottom: 84, // Clears mobile bottom navigation bar on home/catalog
+    right: 16,
+  },
+  floatingHelpContainerProductMobile: {
+    bottom: 158, // Sits cleanly above the sticky Total Price & Add to Cart action bar on product pages
+    right: 16,
+  },
+  floatingHelpContainerKeyboardMobile: {
+    bottom: 290, // Lifts the modal above the mobile virtual numeric keyboard
     right: 16,
   },
   floatingPillBtn: {
@@ -418,6 +502,27 @@ const styles = StyleSheet.create({
     cursor: 'pointer',
     transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
   } as any,
+  floatingPillBtnMobile: {
+    width: 44,
+    height: 44,
+    paddingHorizontal: 0,
+    paddingVertical: 0,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 0,
+  },
+  mobileFloatingBeaconDot: {
+    position: 'absolute',
+    top: 7,
+    right: 7,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#10B981',
+    borderWidth: 1.5,
+    borderColor: '#0F172A',
+  },
   floatingPillBtnActive: {
     backgroundColor: '#1E293B',
     borderColor: '#64748B',
@@ -479,11 +584,11 @@ const styles = StyleSheet.create({
   },
   helpFlyoutCardDesktop: {
     width: 380,
-    maxHeight: 560,
+    maxHeight: 620,
   },
   helpFlyoutCardMobile: {
     width: 340,
-    maxHeight: 500,
+    maxHeight: 565,
   },
   helpFlyoutHeader: {
     flexDirection: 'row',
@@ -559,11 +664,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   helpFlyoutScroll: {
-    maxHeight: 480,
+    maxHeight: 515,
   },
   helpFlyoutScrollContent: {
     padding: 16,
-    gap: 14,
+    paddingBottom: 12,
+    gap: 12,
   },
   helpSectionPrompt: {
     fontSize: 12.5,
@@ -759,7 +865,24 @@ const styles = StyleSheet.create({
   helpCallbackHeader: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  helpCallbackHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 6,
+  },
+  helpKeyboardDismissBtn: {
+    backgroundColor: '#0F172A',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  helpKeyboardDismissText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#34D399',
+    letterSpacing: 0.3,
   },
   helpCallbackTitle: {
     fontSize: 11.5,
@@ -818,8 +941,9 @@ const styles = StyleSheet.create({
   /* Footer Trust Row */
   helpFooterTrustRow: {
     alignItems: 'center',
-    gap: 4,
-    paddingTop: 4,
+    gap: 3,
+    paddingTop: 2,
+    paddingBottom: 2,
   },
   helpTollFreePill: {
     flexDirection: 'row',

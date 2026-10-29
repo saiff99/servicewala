@@ -23,16 +23,15 @@ Servicewala unifies three complete user roles into one synchronized ecosystem:
 - **HomeAdvisor Luxury Hero Section:** Clean framed workstation hero banner, frosted glass headline card, and responsive pill search capsule with smooth focus styling, live filtering, and auto-scroll to search results.
 - **10-Category Specialized Quick Bar:** Direct filtering for *Laptop & Mac, Desktop PC, Printer Repair, AC Service, Refrigerator, Washing Machine, Geyser, Chimney, Air Cooler, Home Cleaning*.
 - **Seasonal Deals & Offers:** One-tap promo code apply with instant checkout price deductions.
-- **Verified Before & After Quality Showcase:** Interactive side-by-side craftsmanship comparisons with verified delta metrics (AC Deep Jet Wash, Laptop Thermal Overhaul, Kitchen Chimney Degreasing, Electrical DB Upgrade) and direct cart booking integration.
 - **₹10,000 Home Protection Promise Shield:** Zero-liability property damage coverage, 48-hour digital claim settlement, and 100% UIDAI biometric & police-verified technicians.
 - **22+ Multi-Brand Infinite Continuous Marquee:** Ultra-smooth CSS-driven infinite loop featuring OEM authorized repair badges for Samsung, Apple, LG, Voltas, HP, Dell, and other top global brands.
-- **Mobile App Download & Live GPS Mockup:** Native-styled iPhone frame showcasing dynamic island, real-time technician arrival radar (14-min ETA), and Start OTP security handshake.
+- **Integrated Mobile App Badges & QR Code:** Official Google Play Store, Apple App Store, and Universal QR Scan cards cleanly embedded directly inside the footer.
 - **Interactive FAQ Accordion:** Comprehensive customer help covering technician verification, rapid dispatch (45-60 min arrival), transparent pricing, and 30-day warranty.
 - **Floating Quick Help & Diagnostic Assistant:** Sticky flyout capsule offering 1-tap issue diagnostics, immediate cost estimates, direct WhatsApp consultation, and 2-minute callback requests.
 - **Dedicated Product & Service Details Pages (`service/[id]`):** Rich presentation featuring high-res imagery, what's included/excluded checklists, 30-day guarantee badge, desktop sticky pricing card, and mobile fixed booking bar.
 - **Interactive Cart & Checkout:** Schedule selection, dynamic cart total, address input, and cash/online payment.
 - **Live Order Tracking:** Active booking status tracking with customer-side 4-digit **Start OTP** and **End OTP**.
-- **Modular Component Architecture:** 100% clean ~140-line master orchestrator importing 16 self-contained modules from `src/components/home/`.
+- **Modular Component Architecture:** 100% clean ~115-line master orchestrator importing 14 self-contained modules from `src/components/home/`.
 
 ### 2. 🧰 Technician / Partner Portal (`app/(partner)`)
 - **Job Feed & Radar:** Instant broadcast notifications for new booking requests matching the technician's skills.

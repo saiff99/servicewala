@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, useWindowDimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, useWindowDimensions, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { THEME } from '../../constants/theme';
@@ -105,39 +105,58 @@ export default function HomeMegaFooter() {
             ))}
           </View>
 
-          {/* Column 4: Ecosystem Portals & Partners */}
+          {/* Column 4: Download App & Mobile Experience */}
           <View style={styles.footerCol}>
-            <Text style={styles.footerColHeading}>Ecosystem & Portals</Text>
+            <Text style={styles.footerColHeading}>Experience on Mobile</Text>
 
+            {/* Google Play Store Badge */}
             <TouchableOpacity
-              onPress={() => router.push('/(partner)')}
-              style={styles.footerPortalCard}
+              style={styles.storeBadgeBtn}
               activeOpacity={0.85}
+              onPress={() => {
+                if (Platform.OS === 'web' && typeof window !== 'undefined') {
+                  window.open('https://play.google.com', '_blank');
+                }
+              }}
             >
-              <View style={styles.footerPortalCardIconWrap}>
-                <Ionicons name="briefcase-outline" size={18} color="#10B981" />
+              <Ionicons name="logo-google-playstore" size={20} color="#FFFFFF" />
+              <View style={styles.storeBadgeTexts}>
+                <Text style={styles.storeBadgeSub}>GET IT ON</Text>
+                <Text style={styles.storeBadgeMain}>Google Play</Text>
               </View>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.footerPortalCardTitle}>Technician Partner Portal</Text>
-                <Text style={styles.footerPortalCardSub}>Login & Manage Live Job Feed</Text>
-              </View>
-              <Ionicons name="arrow-forward" size={14} color="#94A3B8" />
             </TouchableOpacity>
 
+            {/* Apple App Store Badge */}
             <TouchableOpacity
-              onPress={() => router.push('/(admin)')}
-              style={styles.footerPortalCard}
+              style={styles.storeBadgeBtn}
               activeOpacity={0.85}
+              onPress={() => {
+                if (Platform.OS === 'web' && typeof window !== 'undefined') {
+                  window.open('https://apple.com/app-store', '_blank');
+                }
+              }}
             >
-              <View style={[styles.footerPortalCardIconWrap, { backgroundColor: 'rgba(153, 27, 27, 0.15)' }]}>
-                <Ionicons name="stats-chart-outline" size={18} color="#EF4444" />
+              <Ionicons name="logo-apple" size={22} color="#FFFFFF" />
+              <View style={styles.storeBadgeTexts}>
+                <Text style={styles.storeBadgeSub}>Download on the</Text>
+                <Text style={styles.storeBadgeMain}>App Store</Text>
               </View>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.footerPortalCardTitle}>Admin Operations Control</Text>
-                <Text style={styles.footerPortalCardSub}>Dispatch, Fleet & Revenue KPIs</Text>
-              </View>
-              <Ionicons name="arrow-forward" size={14} color="#94A3B8" />
             </TouchableOpacity>
+
+            {/* Scan to Download QR Card */}
+            <View style={styles.appQrCard}>
+              <View style={styles.appQrWrap}>
+                <Ionicons name="qr-code" size={36} color="#0F172A" />
+              </View>
+              <View style={styles.appQrInfo}>
+                <Text style={styles.appQrTitle}>Scan to Download</Text>
+                <Text style={styles.appQrSub}>iOS & Android Universal</Text>
+                <View style={styles.appQrRatingRow}>
+                  <Ionicons name="star" size={11} color="#F59E0B" />
+                  <Text style={styles.appQrRatingText}>4.8 • 100k+ downloads</Text>
+                </View>
+              </View>
+            </View>
 
             <View style={styles.footerAppBadgeRow}>
               <Ionicons name="shield-checkmark" size={13} color="#10B981" />
@@ -293,34 +312,76 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '500',
   },
-  footerPortalCard: {
+  storeBadgeBtn: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 10,
     backgroundColor: '#1E293B',
-    padding: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 9,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: '#334155',
-    gap: 10,
-    marginBottom: 10,
+    marginBottom: 8,
   },
-  footerPortalCardIconWrap: {
-    width: 32,
-    height: 32,
+  storeBadgeTexts: {
+    justifyContent: 'center',
+  },
+  storeBadgeSub: {
+    color: '#94A3B8',
+    fontSize: 8.5,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+  },
+  storeBadgeMain: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '800',
+    letterSpacing: 0.3,
+  },
+  appQrCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: '#1E293B',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#334155',
+    marginTop: 2,
+    marginBottom: 8,
+  },
+  appQrWrap: {
+    backgroundColor: '#FFFFFF',
+    padding: 4,
     borderRadius: 8,
-    backgroundColor: 'rgba(16, 185, 129, 0.15)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  footerPortalCardTitle: {
-    color: '#FFFFFF',
-    fontSize: 12.5,
-    fontWeight: '700',
+  appQrInfo: {
+    justifyContent: 'center',
   },
-  footerPortalCardSub: {
+  appQrTitle: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '800',
+  },
+  appQrSub: {
     color: '#94A3B8',
-    fontSize: 10.5,
+    fontSize: 10,
     marginTop: 1,
+  },
+  appQrRatingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 3,
+  },
+  appQrRatingText: {
+    color: '#10B981',
+    fontSize: 10.5,
+    fontWeight: '700',
   },
   footerAppBadgeRow: {
     flexDirection: 'row',
