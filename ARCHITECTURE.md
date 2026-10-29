@@ -118,6 +118,7 @@ This calculation automatically updates:
 - `_layout.tsx`: Desktop navbar with Urban Company style header + Mobile bottom navigation.
 - `index.tsx`: Clean orchestrator landing page (~140 lines) assembling isolated home components from `src/components/home/`.
 - `category/[id].tsx`: Category services list with price filter, ratings, and one-tap cart addition.
+- `service/[id].tsx`: Dedicated product/service details page (rich photos, includes/exclusions checklist, safety protocol, desktop sticky booking bar, mobile bottom bar).
 - `checkout.tsx`: Complete multi-step checkout with coupon codes, address input, and cash/online choice.
 - `bookings.tsx`: Real-time order timeline with customer-facing OTP cards and service details.
 

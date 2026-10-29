@@ -14,6 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useEcosystemStore } from '../../src/store/useEcosystemStore';
 import { THEME } from '../../src/constants/theme';
+import { FloatingHelpCapsule } from '../../src/components/home';
 
 const NAV_MENU_ITEMS = [
   {
@@ -540,6 +541,9 @@ export default function CustomerLayout() {
       <View style={styles.contentArea}>
         <Slot />
       </View>
+
+      {/* Floating Quick Help & Diagnostic Capsule (Globally visible on Home, Product Details & Categories) */}
+      <FloatingHelpCapsule />
 
       {/* MOBILE BOTTOM TABS */}
       {!isDesktop && (

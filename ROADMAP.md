@@ -10,6 +10,14 @@ This document outlines the strategic development phases for the **Servicewala Mu
   - [x] **Customer Portal:** Marketplace hero, 10 specialized categories, live search, cart, checkout, and bookings.
   - [x] **Technician Portal:** Live job alerts radar, active job card, Start/End OTP verification, and earnings ledger.
   - [x] **Admin Operations Center:** Real-time revenue & GMV KPIs, live order dispatch board, dynamic catalog manager, and technician KYC approval.
+- [x] **High-Conversion Trust & Quality Engines (Customer Home):**
+  - [x] **22+ Multi-Brand Infinite Marquee:** Continuous CSS-animated loop displaying genuine OEM authorized repair support for Samsung, Apple, LG, Voltas, HP, Dell, etc.
+  - [x] **Before & After Quality Showcase:** Interactive comparisons with verified delta metrics (AC Jet Wash, Laptop Thermal Overhaul, Chimney Degreasing, Electrical DB Upgrade) and direct cart integration.
+  - [x] **₹10,000 Home Protection Promise Shield:** Zero-liability property damage coverage, 48-hour claim processing, and 4 trust pillars.
+  - [x] **Mobile App Download Showcase:** Native-styled iPhone frame with dynamic island, live technician arrival radar (14-min ETA), and Start OTP security handshake.
+  - [x] **Floating Quick Help & Diagnostic Capsule:** Sticky flyout capsule offering 1-tap issue diagnostics, immediate cost estimates, WhatsApp chat, and 2-min callback requests.
+  - [x] **Enterprise Mega Footer & FAQ:** Comprehensive interactive accordion and multi-column luxury footer with trust ribbon and portal navigation.
+- [x] **Modular Component Architecture:** Decomposed ~6,400-line monolithic customer home into 16 self-contained modules in `src/components/home/` with a clean ~140-line master orchestrator.
 - [x] **Universal Cross-Platform Codebase:** Single codebase running on Web (Desktop & Laptop) and ready for Mobile (Android & iOS).
 - [x] **Single-Source-of-Truth Reactive State:** Synchronous Zustand store (`src/store/useEcosystemStore.ts`) enabling instant cross-portal simulation without external database setup.
 - [x] **Two-Factor Doorstep Security Protocol:** Dynamic 4-digit `startOtp` and `endOtp` verification cycle.

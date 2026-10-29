@@ -17,7 +17,6 @@ import {
   AppDownloadBanner,
   PartnerBanner,
   HomeMegaFooter,
-  FloatingHelpCapsule,
 } from '../../src/components/home';
 
 export default function CustomerHomeScreen() {
@@ -39,13 +38,6 @@ export default function CustomerHomeScreen() {
   const handleQuickFilterChange = () => {
     mainScrollRef.current?.scrollTo({
       y: isDesktop ? 450 : 390,
-      animated: true,
-    });
-  };
-
-  const handleConsultationScroll = () => {
-    mainScrollRef.current?.scrollTo({
-      y: isDesktop ? 650 : 580,
       animated: true,
     });
   };
@@ -117,9 +109,6 @@ export default function CustomerHomeScreen() {
         {/* 15. Luxury Multi-Column Mega Footer */}
         <HomeMegaFooter />
       </ScrollView>
-
-      {/* 16. Floating Quick Help & Diagnostic Capsule */}
-      <FloatingHelpCapsule onScrollToServices={handleConsultationScroll} />
     </View>
   );
 }

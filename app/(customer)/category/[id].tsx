@@ -357,16 +357,29 @@ export default function CategoryScreen() {
                   <Text style={styles.modalFooterPrice}>{currencyFormatter(selectedService.price)}</Text>
                 </View>
 
-                <TouchableOpacity
-                  onPress={() => {
-                    addToCart(selectedService.id);
-                    setSelectedService(null);
-                  }}
-                  style={styles.modalAddToCartBtn}
-                >
-                  <Ionicons name="cart" size={16} color="#FFFFFF" />
-                  <Text style={styles.modalAddToCartText}>Add to Booking</Text>
-                </TouchableOpacity>
+                <View style={styles.modalFooterActions}>
+                  <TouchableOpacity
+                    onPress={() => {
+                      const sId = selectedService.id;
+                      setSelectedService(null);
+                      router.push(`/(customer)/service/${sId}`);
+                    }}
+                    style={styles.modalFullPageBtn}
+                  >
+                    <Text style={styles.modalFullPageBtnText}>Full Page ↗</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    onPress={() => {
+                      addToCart(selectedService.id);
+                      setSelectedService(null);
+                    }}
+                    style={styles.modalAddToCartBtn}
+                  >
+                    <Ionicons name="cart" size={16} color="#FFFFFF" />
+                    <Text style={styles.modalAddToCartText}>Add to Booking</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             )}
           </View>
@@ -936,11 +949,29 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     color: '#0F172A',
   },
+  modalFooterActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  modalFullPageBtn: {
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 10,
+    backgroundColor: '#F1F5F9',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  modalFullPageBtnText: {
+    color: '#0F172A',
+    fontSize: 12.5,
+    fontWeight: '700',
+  },
   modalAddToCartBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: THEME.colors.primary,
-    paddingHorizontal: 20,
+    paddingHorizontal: 18,
     paddingVertical: 10,
     borderRadius: 10,
     gap: 8,

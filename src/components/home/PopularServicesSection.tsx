@@ -1,12 +1,14 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
+  Pressable,
   Image,
   useWindowDimensions,
 } from 'react-native';
+import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { THEME, currencyFormatter } from '../../constants/theme';
 import { useEcosystemStore } from '../../store/useEcosystemStore';
@@ -39,7 +41,9 @@ export default function PopularServicesSection({
 }: PopularServicesSectionProps) {
   const { width } = useWindowDimensions();
   const isDesktop = width >= THEME.breakpoints.desktopMin;
+  const router = useRouter();
   const { categories, services, cart, addToCart, removeFromCart } = useEcosystemStore();
+  const [hoveredServiceId, setHoveredServiceId] = useState<string | null>(null);
 
   const filteredServices = useMemo(() => {
     let result = services;
@@ -122,20 +126,31 @@ export default function PopularServicesSection({
         <View style={styles.servicesGrid}>
           {filteredServices.map((service) => {
             const qty = cart[service.id] || 0;
+            const isHovered = hoveredServiceId === service.id;
             return (
-              <View
+              <Pressable
                 key={service.id}
+                onPress={() => router.push(`/(customer)/service/${service.id}`)}
+                onHoverIn={() => setHoveredServiceId(service.id)}
+                onHoverOut={() => setHoveredServiceId(null)}
                 style={[
                   styles.serviceCard,
                   isDesktop ? styles.serviceCardDesktop : styles.serviceCardMobile,
+                  isHovered && styles.serviceCardHovered,
                 ]}
               >
-                <Image source={{ uri: service.imageUrl }} style={styles.serviceImage} />
-                {service.popularBadge && (
-                  <View style={styles.popularBadge}>
-                    <Text style={styles.popularBadgeText}>{service.popularBadge}</Text>
+                <View style={styles.serviceImageContainer}>
+                  <Image source={{ uri: service.imageUrl }} style={styles.serviceImage} />
+                  {service.popularBadge && (
+                    <View style={styles.popularBadge}>
+                      <Text style={styles.popularBadgeText}>{service.popularBadge}</Text>
+                    </View>
+                  )}
+                  <View style={styles.viewDetailsBadge}>
+                    <Text style={styles.viewDetailsBadgeText}>View Details</Text>
+                    <Ionicons name="arrow-forward" size={11} color="#FFFFFF" />
                   </View>
-                )}
+                </View>
 
                 <View style={styles.serviceBody}>
                   <View style={styles.ratingRow}>
@@ -170,14 +185,20 @@ export default function PopularServicesSection({
                     {qty > 0 ? (
                       <View style={styles.quantityControl}>
                         <TouchableOpacity
-                          onPress={() => removeFromCart(service.id)}
+                          onPress={(e) => {
+                            e.stopPropagation();
+                            removeFromCart(service.id);
+                          }}
                           style={styles.qtyBtn}
                         >
                           <Ionicons name="remove" size={16} color="#FFFFFF" />
                         </TouchableOpacity>
                         <Text style={styles.qtyNumber}>{qty}</Text>
                         <TouchableOpacity
-                          onPress={() => addToCart(service.id)}
+                          onPress={(e) => {
+                            e.stopPropagation();
+                            addToCart(service.id);
+                          }}
                           style={styles.qtyBtn}
                         >
                           <Ionicons name="add" size={16} color="#FFFFFF" />
@@ -185,7 +206,10 @@ export default function PopularServicesSection({
                       </View>
                     ) : (
                       <TouchableOpacity
-                        onPress={() => addToCart(service.id)}
+                        onPress={(e) => {
+                          e.stopPropagation();
+                          addToCart(service.id);
+                        }}
                         style={styles.addCartBtn}
                         activeOpacity={0.85}
                       >
@@ -195,7 +219,7 @@ export default function PopularServicesSection({
                     )}
                   </View>
                 </View>
-              </View>
+              </Pressable>
             );
           })}
         </View>
@@ -291,13 +315,24 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
     overflow: 'hidden',
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: '#E2E8F0',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
-    shadowRadius: 3,
+    shadowRadius: 6,
     elevation: 2,
+    cursor: 'pointer',
+    transition: 'all 0.22s cubic-bezier(0.16, 1, 0.3, 1)',
+  } as any,
+  serviceCardHovered: {
+    borderColor: '#0F172A',
+    transform: [{ translateY: -3 }],
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
+    elevation: 5,
   },
   serviceCardDesktop: {
     width: '31.5%',
@@ -305,9 +340,15 @@ const styles = StyleSheet.create({
   serviceCardMobile: {
     width: '100%',
   },
-  serviceImage: {
+  serviceImageContainer: {
     width: '100%',
     height: 160,
+    position: 'relative',
+    backgroundColor: '#E2E8F0',
+  },
+  serviceImage: {
+    width: '100%',
+    height: '100%',
   },
   popularBadge: {
     position: 'absolute',
@@ -317,11 +358,30 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 6,
+    zIndex: 2,
   },
   popularBadgeText: {
     color: '#FFFFFF',
     fontSize: 10,
     fontWeight: '800',
+  },
+  viewDetailsBadge: {
+    position: 'absolute',
+    bottom: 8,
+    right: 8,
+    backgroundColor: 'rgba(15, 23, 42, 0.78)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    zIndex: 2,
+  },
+  viewDetailsBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: '700',
   },
   serviceBody: {
     padding: 16,

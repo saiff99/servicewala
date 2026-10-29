@@ -10,6 +10,7 @@ import {
   Platform,
   useWindowDimensions,
 } from 'react-native';
+import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { THEME, currencyFormatter } from '../../constants/theme';
 import { useEcosystemStore } from '../../store/useEcosystemStore';
@@ -74,8 +75,9 @@ interface FloatingHelpCapsuleProps {
 }
 
 export default function FloatingHelpCapsule({ onScrollToServices }: FloatingHelpCapsuleProps) {
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
   const isDesktop = width >= THEME.breakpoints.desktopMin;
+  const router = useRouter();
   const { cart, addToCart } = useEcosystemStore();
 
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
@@ -98,15 +100,42 @@ export default function FloatingHelpCapsule({ onScrollToServices }: FloatingHelp
   };
 
   return (
-    <View style={styles.floatingHelpContainer}>
-      {/* Flyout Consultation Panel (When Open) */}
+    <>
+      {/* Dimmed & Frosted Blurred Backdrop (When Help Modal is Open) */}
       {isHelpModalOpen && (
-        <View
-          style={[
-            styles.helpFlyoutCard,
-            isDesktop ? styles.helpFlyoutCardDesktop : styles.helpFlyoutCardMobile,
-          ]}
-        >
+        <Pressable
+          style={styles.helpBackdrop}
+          onPress={() => {
+            setIsHelpModalOpen(false);
+            setSelectedHelpIssueId(null);
+            setIsCallbackSubmitted(false);
+          }}
+          accessibilityLabel="Close help modal backdrop"
+        />
+      )}
+
+      <View
+        style={[
+          styles.floatingHelpContainer,
+          !isDesktop && styles.floatingHelpContainerMobile,
+        ]}
+      >
+        {/* Flyout Consultation Panel (When Open) */}
+        {isHelpModalOpen && (
+          <View
+            style={[
+              styles.helpFlyoutCard,
+              isDesktop
+                ? styles.helpFlyoutCardDesktop
+                : [
+                    styles.helpFlyoutCardMobile,
+                    {
+                      width: Math.min(width - 32, 380),
+                      maxHeight: Math.min(height - 140, 520),
+                    },
+                  ],
+            ]}
+          >
           {/* Top Bar: Specialist Info & Close Button */}
           <View style={styles.helpFlyoutHeader}>
             <View style={styles.helpFlyoutHeaderLeft}>
@@ -174,7 +203,16 @@ export default function FloatingHelpCapsule({ onScrollToServices }: FloatingHelp
                       <Ionicons name="shield-checkmark" size={14} color="#059669" />
                       <Text style={styles.helpSolutionHeaderText}>RECOMMENDED PRO FIX</Text>
                     </View>
-                    <Text style={styles.helpSolutionName}>{selectedHelpIssue.recommendedService}</Text>
+                    <TouchableOpacity
+                      onPress={() => {
+                        setIsHelpModalOpen(false);
+                        router.push(`/(customer)/service/${selectedHelpIssue.serviceId}`);
+                      }}
+                      activeOpacity={0.8}
+                    >
+                      <Text style={styles.helpSolutionName}>{selectedHelpIssue.recommendedService}</Text>
+                      <Text style={styles.helpSolutionViewPageLink}>View full service details & protocol →</Text>
+                    </TouchableOpacity>
                     <View style={styles.helpSolutionFooter}>
                       <Text style={styles.helpSolutionPrice}>From {currencyFormatter(selectedHelpIssue.price)}</Text>
                       <TouchableOpacity
@@ -330,16 +368,37 @@ export default function FloatingHelpCapsule({ onScrollToServices }: FloatingHelp
         )}
       </Pressable>
     </View>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
+  helpBackdrop: {
+    position: (Platform.OS === 'web' ? 'fixed' : 'absolute') as any,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(15, 23, 42, 0.68)',
+    ...(Platform.OS === 'web'
+      ? {
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
+          cursor: 'pointer',
+        }
+      : {}),
+    zIndex: 100000,
+  } as any,
   floatingHelpContainer: {
     position: (Platform.OS === 'web' ? 'fixed' : 'absolute') as any,
     bottom: 24,
     right: 24,
-    zIndex: 99999,
+    zIndex: 100005,
     alignItems: 'flex-end',
+  },
+  floatingHelpContainerMobile: {
+    bottom: 84, // Clears mobile bottom navigation bar
+    right: 16,
   },
   floatingPillBtn: {
     flexDirection: 'row',
@@ -414,9 +473,9 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     shadowColor: '#0F172A',
     shadowOffset: { width: 0, height: 16 },
-    shadowOpacity: 0.22,
+    shadowOpacity: 0.35,
     shadowRadius: 36,
-    elevation: 12,
+    elevation: 16,
   },
   helpFlyoutCardDesktop: {
     width: 380,
@@ -625,6 +684,13 @@ const styles = StyleSheet.create({
     fontSize: 12.5,
     fontWeight: '800',
     color: '#0F172A',
+    marginBottom: 2,
+  },
+  helpSolutionViewPageLink: {
+    fontSize: 10.5,
+    color: '#2563EB',
+    fontWeight: '600',
+    marginBottom: 6,
   },
   helpSolutionFooter: {
     flexDirection: 'row',
