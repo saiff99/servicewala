@@ -115,11 +115,11 @@ export default function PartnerProfileScreen() {
             {
               title: 'Police Clearance Certificate (PCC)',
               status: 'Approved',
-              sub: 'Valid till 31 Dec 2027 • Bengaluru Police',
+              sub: 'Valid till 31 Dec 2027 • Government Police Verification',
               icon: 'document-text-outline',
             },
             {
-              title: 'Urban Company Skill Certification',
+              title: 'Servicewala Skill Certification',
               status: 'Level 3 Pro',
               sub: '98% pass score on HVAC & plumbing safety',
               icon: 'ribbon-outline',

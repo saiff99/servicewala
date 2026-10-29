@@ -1,0 +1,778 @@
+import React, { useState, useMemo } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Pressable,
+  ScrollView,
+  TextInput,
+  Platform,
+  useWindowDimensions,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { THEME, currencyFormatter } from '../../constants/theme';
+import { useEcosystemStore } from '../../store/useEcosystemStore';
+
+/* ─── Diagnostic Topics ─── */
+interface HelpIssue {
+  id: string;
+  icon: string;
+  label: string;
+  category: string;
+  diagnosis: string;
+  recommendedService: string;
+  serviceId: string;
+  price: number;
+}
+
+const QUICK_HELP_ISSUES: HelpIssue[] = [
+  {
+    id: 'ac-issue',
+    icon: 'snow-outline',
+    label: 'AC not cooling / water leakage',
+    category: 'Air Conditioners',
+    diagnosis: 'Commonly caused by choked cooling coils, blocked condensate drain tray, or refrigerant pressure drop.',
+    recommendedService: 'Power Jet AC Servicing & Deep Sanitization',
+    serviceId: 'srv-ac-deep',
+    price: 599,
+  },
+  {
+    id: 'laptop-issue',
+    icon: 'laptop-outline',
+    label: 'Laptop overheating / fan noise / lag',
+    category: 'Computers & Laptops',
+    diagnosis: 'Hardened 2+ year dry thermal paste and dust clogging dual heatpipes, forcing severe thermal throttling.',
+    recommendedService: 'Laptop Thermal Paste Repaste & Fan Overhaul',
+    serviceId: 'srv-laptop-chip',
+    price: 499,
+  },
+  {
+    id: 'elec-issue',
+    icon: 'flash-outline',
+    label: 'MCB tripping / burning wire smell',
+    category: 'Electrical Safety',
+    diagnosis: 'Loose charred copper terminal joints or overloaded phase lines. Requires immediate fire-safety inspection.',
+    recommendedService: 'Distribution Board & Smart MCB Rewiring',
+    serviceId: 'srv-rep-switchboard',
+    price: 249,
+  },
+  {
+    id: 'chimney-issue',
+    icon: 'restaurant-outline',
+    label: 'Chimney suction loss / oil dripping',
+    category: 'Kitchen Appliances',
+    diagnosis: 'Heavy grease sludge accumulation choking the centrifugal rotor blades and oil baffle filtration channel.',
+    recommendedService: 'Kitchen Chimney Deep Degreasing & Blower Wash',
+    serviceId: 'srv-chimney-repair',
+    price: 499,
+  },
+];
+
+interface FloatingHelpCapsuleProps {
+  onScrollToServices?: () => void;
+}
+
+export default function FloatingHelpCapsule({ onScrollToServices }: FloatingHelpCapsuleProps) {
+  const { width } = useWindowDimensions();
+  const isDesktop = width >= THEME.breakpoints.desktopMin;
+  const { cart, addToCart } = useEcosystemStore();
+
+  const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
+  const [selectedHelpIssueId, setSelectedHelpIssueId] = useState<string | null>(null);
+  const [callbackPhone, setCallbackPhone] = useState('');
+  const [isCallbackSubmitted, setIsCallbackSubmitted] = useState(false);
+  const [isFloatingPillHovered, setIsFloatingPillHovered] = useState(false);
+
+  const selectedHelpIssue = useMemo(
+    () => QUICK_HELP_ISSUES.find((q) => q.id === selectedHelpIssueId) || null,
+    [selectedHelpIssueId]
+  );
+
+  const handleBookService = (serviceId: string) => {
+    addToCart(serviceId);
+    setIsHelpModalOpen(false);
+    if (onScrollToServices) {
+      onScrollToServices();
+    }
+  };
+
+  return (
+    <View style={styles.floatingHelpContainer}>
+      {/* Flyout Consultation Panel (When Open) */}
+      {isHelpModalOpen && (
+        <View
+          style={[
+            styles.helpFlyoutCard,
+            isDesktop ? styles.helpFlyoutCardDesktop : styles.helpFlyoutCardMobile,
+          ]}
+        >
+          {/* Top Bar: Specialist Info & Close Button */}
+          <View style={styles.helpFlyoutHeader}>
+            <View style={styles.helpFlyoutHeaderLeft}>
+              <View style={styles.helpFlyoutAvatarWrap}>
+                <Ionicons name="headset" size={16} color="#FFFFFF" />
+                <View style={styles.helpFlyoutAvatarPulse} />
+              </View>
+              <View>
+                <View style={styles.helpFlyoutNameRow}>
+                  <Text style={styles.helpFlyoutName}>Diagnostic Desk</Text>
+                  <View style={styles.helpFlyoutVerifiedBadge}>
+                    <Ionicons name="checkmark-circle" size={10} color="#10B981" />
+                    <Text style={styles.helpFlyoutVerifiedText}>ONLINE</Text>
+                  </View>
+                </View>
+                <Text style={styles.helpFlyoutSub}>Senior Engineers • Reply in &lt; 45s</Text>
+              </View>
+            </View>
+
+            <TouchableOpacity
+              onPress={() => {
+                setIsHelpModalOpen(false);
+                setSelectedHelpIssueId(null);
+                setIsCallbackSubmitted(false);
+              }}
+              style={styles.helpFlyoutCloseBtn}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="close" size={18} color="#94A3B8" />
+            </TouchableOpacity>
+          </View>
+
+          {/* Scrollable / Interactive Flyout Body */}
+          <ScrollView
+            style={styles.helpFlyoutScroll}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.helpFlyoutScrollContent}
+          >
+            {/* If an issue is selected: Show Smart Diagnosis Result */}
+            {selectedHelpIssue ? (
+              <View style={styles.helpDiagnosisResultWrap}>
+                <TouchableOpacity
+                  onPress={() => setSelectedHelpIssueId(null)}
+                  style={styles.helpBackToTopicsBtn}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons name="arrow-back" size={14} color="#64748B" />
+                  <Text style={styles.helpBackToTopicsText}>Change Problem Topic</Text>
+                </TouchableOpacity>
+
+                <View style={styles.helpDiagnosisCard}>
+                  <View style={styles.helpDiagnosisBadgeRow}>
+                    <View style={styles.helpDiagnosisCategoryPill}>
+                      <Text style={styles.helpDiagnosisCategoryText}>{selectedHelpIssue.category}</Text>
+                    </View>
+                    <Text style={styles.helpDiagnosisTimeTag}>⚡ Instant Assessment</Text>
+                  </View>
+
+                  <Text style={styles.helpDiagnosisTitle}>{selectedHelpIssue.label}</Text>
+                  <Text style={styles.helpDiagnosisBody}>{selectedHelpIssue.diagnosis}</Text>
+
+                  {/* Recommended Doorstep Solution Card */}
+                  <View style={styles.helpSolutionCard}>
+                    <View style={styles.helpSolutionHeader}>
+                      <Ionicons name="shield-checkmark" size={14} color="#059669" />
+                      <Text style={styles.helpSolutionHeaderText}>RECOMMENDED PRO FIX</Text>
+                    </View>
+                    <Text style={styles.helpSolutionName}>{selectedHelpIssue.recommendedService}</Text>
+                    <View style={styles.helpSolutionFooter}>
+                      <Text style={styles.helpSolutionPrice}>From {currencyFormatter(selectedHelpIssue.price)}</Text>
+                      <TouchableOpacity
+                        onPress={() => handleBookService(selectedHelpIssue.serviceId)}
+                        style={styles.helpSolutionBookBtn}
+                        activeOpacity={0.88}
+                      >
+                        <Text style={styles.helpSolutionBookText}>
+                          {cart[selectedHelpIssue.serviceId] ? 'In Cart • View' : 'Add to Cart'}
+                        </Text>
+                        <Ionicons name="arrow-forward" size={12} color="#FFFFFF" />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </View>
+              </View>
+            ) : (
+              /* Problem Selector Menu */
+              <View>
+                <Text style={styles.helpSectionPrompt}>
+                  What can our technical specialists assist you with?
+                </Text>
+
+                {/* 4 Quick Diagnosis Chips */}
+                <View style={styles.helpIssuesGrid}>
+                  {QUICK_HELP_ISSUES.map((issue) => (
+                    <TouchableOpacity
+                      key={issue.id}
+                      onPress={() => setSelectedHelpIssueId(issue.id)}
+                      style={styles.helpIssueChip}
+                      activeOpacity={0.85}
+                    >
+                      <View style={styles.helpIssueIconWrap}>
+                        <Ionicons name={issue.icon as any} size={15} color="#0F172A" />
+                      </View>
+                      <Text style={styles.helpIssueLabel}>{issue.label}</Text>
+                      <Ionicons name="chevron-forward" size={13} color="#94A3B8" />
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+            )}
+
+            {/* Instant WhatsApp Consultation Action */}
+            <TouchableOpacity
+              onPress={() => {
+                if (Platform.OS === 'web' && typeof window !== 'undefined') {
+                  window.open(
+                    'https://wa.me/919876543210?text=Hi%20Servicewala%2C%20I%20need%20expert%20help%20choosing%20a%20doorstep%20repair%20service.',
+                    '_blank'
+                  );
+                }
+              }}
+              style={styles.helpWhatsappBtn}
+              activeOpacity={0.88}
+            >
+              <Ionicons name="logo-whatsapp" size={18} color="#FFFFFF" />
+              <View style={styles.helpWhatsappTexts}>
+                <Text style={styles.helpWhatsappTitle}>Chat on WhatsApp with Senior Tech</Text>
+                <Text style={styles.helpWhatsappSub}>Share appliance photo for instant diagnosis</Text>
+              </View>
+            </TouchableOpacity>
+
+            {/* Instant 2-Minute Callback Form */}
+            <View style={styles.helpCallbackCard}>
+              <View style={styles.helpCallbackHeader}>
+                <Ionicons name="call-outline" size={14} color="#059669" />
+                <Text style={styles.helpCallbackTitle}>Request Free Callback in &lt; 2 Mins</Text>
+              </View>
+
+              {isCallbackSubmitted ? (
+                <View style={styles.helpCallbackSuccess}>
+                  <Ionicons name="checkmark-circle" size={18} color="#059669" />
+                  <Text style={styles.helpCallbackSuccessText}>
+                    Callback request received! Senior Specialist Rahul will call {callbackPhone || 'your number'} in &lt; 2 minutes.
+                  </Text>
+                </View>
+              ) : (
+                <View style={styles.helpCallbackForm}>
+                  <TextInput
+                    value={callbackPhone}
+                    onChangeText={setCallbackPhone}
+                    placeholder="Enter 10-digit mobile number"
+                    placeholderTextColor="#94A3B8"
+                    keyboardType="phone-pad"
+                    style={styles.helpCallbackInput}
+                    maxLength={10}
+                  />
+                  <TouchableOpacity
+                    onPress={() => {
+                      if (callbackPhone.trim().length >= 10) {
+                        setIsCallbackSubmitted(true);
+                      }
+                    }}
+                    disabled={callbackPhone.trim().length < 10}
+                    style={[
+                      styles.helpCallbackSubmitBtn,
+                      callbackPhone.trim().length < 10 && styles.helpCallbackSubmitBtnDisabled,
+                    ]}
+                    activeOpacity={0.85}
+                  >
+                    <Text style={styles.helpCallbackSubmitText}>Call Me</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+
+            {/* Direct Toll-Free Line & Guarantee Ribbon */}
+            <View style={styles.helpFooterTrustRow}>
+              <View style={styles.helpTollFreePill}>
+                <Ionicons name="call" size={11} color="#0F172A" />
+                <Text style={styles.helpTollFreeText}>Toll-Free: 1800-120-WALA</Text>
+              </View>
+              <Text style={styles.helpHoursText}>7 AM – 11 PM Daily • 100% Free</Text>
+            </View>
+          </ScrollView>
+        </View>
+      )}
+
+      {/* Floating Capsule Button (Anchored Pin) */}
+      <Pressable
+        onPress={() => setIsHelpModalOpen(!isHelpModalOpen)}
+        onHoverIn={() => setIsFloatingPillHovered(true)}
+        onHoverOut={() => setIsFloatingPillHovered(false)}
+        style={[
+          styles.floatingPillBtn,
+          isHelpModalOpen && styles.floatingPillBtnActive,
+          isFloatingPillHovered && styles.floatingPillBtnHovered,
+        ]}
+      >
+        {isHelpModalOpen ? (
+          <>
+            <Ionicons name="close" size={18} color="#FFFFFF" />
+            <Text style={styles.floatingPillText}>Close Help</Text>
+          </>
+        ) : (
+          <>
+            {/* Pulsing Green Status Beacon */}
+            <View style={styles.floatingBeaconWrap}>
+              <View style={styles.floatingBeaconDot} />
+            </View>
+
+            <Ionicons name="chatbubbles" size={16} color="#FFFFFF" />
+
+            <Text style={styles.floatingPillText}>
+              {isDesktop ? 'Need Help Choosing? Chat with Tech' : 'Need Help?'}
+            </Text>
+
+            <View style={styles.floatingLiveBadge}>
+              <Text style={styles.floatingLiveBadgeText}>LIVE</Text>
+            </View>
+          </>
+        )}
+      </Pressable>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  floatingHelpContainer: {
+    position: (Platform.OS === 'web' ? 'fixed' : 'absolute') as any,
+    bottom: 24,
+    right: 24,
+    zIndex: 99999,
+    alignItems: 'flex-end',
+  },
+  floatingPillBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#0F172A',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 30,
+    borderWidth: 1.5,
+    borderColor: '#334155',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.28,
+    shadowRadius: 18,
+    elevation: 8,
+    cursor: 'pointer',
+    transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+  } as any,
+  floatingPillBtnActive: {
+    backgroundColor: '#1E293B',
+    borderColor: '#64748B',
+  },
+  floatingPillBtnHovered: {
+    backgroundColor: '#1E293B',
+    borderColor: '#10B981',
+    transform: [{ translateY: -2 }],
+    shadowOpacity: 0.35,
+    shadowRadius: 22,
+  } as any,
+  floatingPillText: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    letterSpacing: 0.3,
+  },
+  floatingBeaconWrap: {
+    position: 'relative',
+    width: 8,
+    height: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  floatingBeaconDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#10B981',
+  },
+  floatingLiveBadge: {
+    backgroundColor: 'rgba(16, 185, 129, 0.2)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#059669',
+  },
+  floatingLiveBadgeText: {
+    fontSize: 9,
+    fontWeight: '900',
+    color: '#34D399',
+    letterSpacing: 0.6,
+  },
+
+  /* Flyout Card Modal */
+  helpFlyoutCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 22,
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    marginBottom: 12,
+    overflow: 'hidden',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 16 },
+    shadowOpacity: 0.22,
+    shadowRadius: 36,
+    elevation: 12,
+  },
+  helpFlyoutCardDesktop: {
+    width: 380,
+    maxHeight: 560,
+  },
+  helpFlyoutCardMobile: {
+    width: 340,
+    maxHeight: 500,
+  },
+  helpFlyoutHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#0F172A',
+    paddingHorizontal: 18,
+    paddingVertical: 14,
+  },
+  helpFlyoutHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  helpFlyoutAvatarWrap: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: '#1E293B',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#334155',
+    position: 'relative',
+  },
+  helpFlyoutAvatarPulse: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#10B981',
+    borderWidth: 1.5,
+    borderColor: '#0F172A',
+  },
+  helpFlyoutNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  helpFlyoutName: {
+    fontSize: 13.5,
+    fontWeight: '800',
+    color: '#FFFFFF',
+  },
+  helpFlyoutVerifiedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    backgroundColor: 'rgba(16, 185, 129, 0.15)',
+    paddingHorizontal: 5,
+    paddingVertical: 1.5,
+    borderRadius: 4,
+  },
+  helpFlyoutVerifiedText: {
+    fontSize: 8.5,
+    fontWeight: '900',
+    color: '#34D399',
+    letterSpacing: 0.5,
+  },
+  helpFlyoutSub: {
+    fontSize: 10.5,
+    color: '#94A3B8',
+    marginTop: 1,
+  },
+  helpFlyoutCloseBtn: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#1E293B',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  helpFlyoutScroll: {
+    maxHeight: 480,
+  },
+  helpFlyoutScrollContent: {
+    padding: 16,
+    gap: 14,
+  },
+  helpSectionPrompt: {
+    fontSize: 12.5,
+    fontWeight: '700',
+    color: '#334155',
+    marginBottom: 10,
+    lineHeight: 18,
+  },
+  helpIssuesGrid: {
+    gap: 8,
+    marginBottom: 4,
+  },
+  helpIssueChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: '#F8FAFC',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  helpIssueIconWrap: {
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  helpIssueLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#0F172A',
+    flex: 1,
+  },
+
+  /* Diagnosis Result View */
+  helpDiagnosisResultWrap: {
+    gap: 10,
+  },
+  helpBackToTopicsBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    alignSelf: 'flex-start',
+    paddingVertical: 2,
+  },
+  helpBackToTopicsText: {
+    fontSize: 11.5,
+    fontWeight: '700',
+    color: '#2563EB',
+  },
+  helpDiagnosisCard: {
+    backgroundColor: '#F0FDF4',
+    borderRadius: 14,
+    padding: 14,
+    borderWidth: 1.5,
+    borderColor: '#A7F3D0',
+    gap: 8,
+  },
+  helpDiagnosisBadgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  helpDiagnosisCategoryPill: {
+    backgroundColor: '#DCFCE7',
+    paddingHorizontal: 7,
+    paddingVertical: 2.5,
+    borderRadius: 5,
+  },
+  helpDiagnosisCategoryText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#047857',
+    textTransform: 'uppercase',
+  },
+  helpDiagnosisTimeTag: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#059669',
+  },
+  helpDiagnosisTitle: {
+    fontSize: 13.5,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  helpDiagnosisBody: {
+    fontSize: 12,
+    color: '#1E293B',
+    lineHeight: 18,
+  },
+  helpSolutionCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#BBF7D0',
+    marginTop: 4,
+    gap: 4,
+  },
+  helpSolutionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  helpSolutionHeaderText: {
+    fontSize: 9.5,
+    fontWeight: '900',
+    color: '#047857',
+    letterSpacing: 0.5,
+  },
+  helpSolutionName: {
+    fontSize: 12.5,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  helpSolutionFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 6,
+  },
+  helpSolutionPrice: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  helpSolutionBookBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#059669',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  helpSolutionBookText: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#FFFFFF',
+  },
+
+  /* WhatsApp Action */
+  helpWhatsappBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: '#16A34A',
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    shadowColor: '#16A34A',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  helpWhatsappTexts: {
+    flex: 1,
+  },
+  helpWhatsappTitle: {
+    fontSize: 12.5,
+    fontWeight: '800',
+    color: '#FFFFFF',
+  },
+  helpWhatsappSub: {
+    fontSize: 10.5,
+    color: 'rgba(255, 255, 255, 0.85)',
+    marginTop: 1,
+  },
+
+  /* 2-Minute Callback Card */
+  helpCallbackCard: {
+    backgroundColor: '#F8FAFC',
+    borderRadius: 14,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    gap: 8,
+  },
+  helpCallbackHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  helpCallbackTitle: {
+    fontSize: 11.5,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  helpCallbackForm: {
+    flexDirection: 'row',
+    gap: 6,
+  },
+  helpCallbackInput: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    fontSize: 12,
+    color: '#0F172A',
+  },
+  helpCallbackSubmitBtn: {
+    backgroundColor: '#0F172A',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  helpCallbackSubmitBtnDisabled: {
+    opacity: 0.45,
+  },
+  helpCallbackSubmitText: {
+    fontSize: 11.5,
+    fontWeight: '800',
+    color: '#FFFFFF',
+  },
+  helpCallbackSuccess: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#ECFDF5',
+    padding: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+  },
+  helpCallbackSuccessText: {
+    fontSize: 11,
+    color: '#065F46',
+    fontWeight: '600',
+    flex: 1,
+    lineHeight: 16,
+  },
+
+  /* Footer Trust Row */
+  helpFooterTrustRow: {
+    alignItems: 'center',
+    gap: 4,
+    paddingTop: 4,
+  },
+  helpTollFreePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  helpTollFreeText: {
+    fontSize: 10.5,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  helpHoursText: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#94A3B8',
+  },
+});
+

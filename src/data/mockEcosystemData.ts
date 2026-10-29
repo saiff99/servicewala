@@ -904,7 +904,7 @@ export const TESTIMONIALS = [
   {
     id: 'test-1',
     name: 'Priyanka Nambiar',
-    role: 'Product Lead, Indiranagar',
+    role: 'Product Lead • Verified Customer',
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80',
     comment: 'The jet AC wash restored our 5-year-old Daikin unit to whisper-quiet ice cooling. The technician arrived punctually in uniform with a safety kit.',
     rating: 5,
@@ -913,7 +913,7 @@ export const TESTIMONIALS = [
   {
     id: 'test-2',
     name: 'Rohan Mehra',
-    role: 'Founder, Koramangala',
+    role: 'Business Owner • Verified Customer',
     avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&q=80',
     comment: 'Booked an emergency plumber at 8:30 PM for a bathroom pipe leak. He was at my gate within 45 minutes and fixed the concealed valve cleanly.',
     rating: 5,
@@ -922,7 +922,7 @@ export const TESTIMONIALS = [
   {
     id: 'test-3',
     name: 'Shweta Rao',
-    role: 'Architect, Whitefield',
+    role: 'Architect • Verified Customer',
     avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&q=80',
     comment: 'Sunita arrived with single-use sterile salon kits. The O3+ facial was just as good as a 5-star salon at half the price without leaving my home.',
     rating: 5,

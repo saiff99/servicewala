@@ -158,7 +158,7 @@ export default function CategoryScreen() {
             </Text>
             <View style={styles.warrantyBadge}>
               <Ionicons name="shield-checkmark" size={14} color="#10B981" />
-              <Text style={styles.warrantyText}>30-Day Urban Company Guarantee</Text>
+              <Text style={styles.warrantyText}>30-Day Servicewala Guarantee</Text>
             </View>
           </View>
 
@@ -331,7 +331,7 @@ export default function CategoryScreen() {
                     ))}
                   </View>
 
-                  <Text style={styles.modalSectionHeading}>Urban Quality & Safety Standard:</Text>
+                  <Text style={styles.modalSectionHeading}>Servicewala Quality & Safety Standard:</Text>
                   <View style={styles.safetyBox}>
                     <View style={styles.safetyItem}>
                       <Ionicons name="shield" size={18} color="#4F46E5" />

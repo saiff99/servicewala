@@ -94,10 +94,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   brandLogoImage: {
-    width: 140,
-    height: 48,
-    maxWidth: '90%',
-    maxHeight: '80%',
+    width: 148,
+    height: 50,
+    maxWidth: '92%',
+    maxHeight: '84%',
     transition: 'filter 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
   } as any,
   brandLogoGrayscale: {

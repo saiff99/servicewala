@@ -43,10 +43,10 @@ export default function CheckoutScreen() {
   const [customerName, setCustomerName] = useState('Ananya Deshmukh');
   const [customerPhone, setCustomerPhone] = useState('+91 98201 12345');
   const [flatNo, setFlatNo] = useState('Flat 402, Green Glen Heights');
-  const [street, setStreet] = useState('Bellandur Outer Ring Road');
-  const [city, setCity] = useState('Bengaluru');
-  const [pincode, setPincode] = useState('560103');
-  const [landmark, setLandmark] = useState('Opposite Cloudnine Hospital');
+  const [street, setStreet] = useState('Park Avenue Road');
+  const [city, setCity] = useState('');
+  const [pincode, setPincode] = useState('');
+  const [landmark, setLandmark] = useState('');
   const [addressTag, setAddressTag] = useState<'Home' | 'Work' | 'Other'>('Home');
 
   // Schedule State
@@ -422,7 +422,7 @@ export default function CheckoutScreen() {
                   <TextInput
                     value={city}
                     onChangeText={setCity}
-                    placeholder="Bengaluru"
+                    placeholder="Enter city name"
                     style={styles.textInput}
                   />
                 </View>
@@ -431,7 +431,7 @@ export default function CheckoutScreen() {
                   <TextInput
                     value={pincode}
                     onChangeText={setPincode}
-                    placeholder="560103"
+                    placeholder="Enter pincode"
                     keyboardType="numeric"
                     style={styles.textInput}
                   />

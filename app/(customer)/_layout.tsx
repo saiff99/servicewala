@@ -51,7 +51,7 @@ export default function CustomerLayout() {
   const { cart, orders } = useEcosystemStore();
 
   const [headerSearch, setHeaderSearch] = useState('');
-  const [selectedLocation, setSelectedLocation] = useState('Kolkata');
+  const [selectedLocation, setSelectedLocation] = useState('All India');
   const [locationSearchQuery, setLocationSearchQuery] = useState('');
   const [showLocationPicker, setShowLocationPicker] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -112,10 +112,14 @@ export default function CustomerLayout() {
   }, [showLocationPicker, showProfileMenu]);
 
   const CITIES = [
+    'All India',
     'Kolkata',
-    'Delhi',
+    'Delhi NCR',
     'Mumbai',
+    'Bengaluru',
+    'Hyderabad',
     'Chennai',
+    'Pune',
   ];
 
   const filteredCities = CITIES.filter((city) =>
@@ -130,7 +134,7 @@ export default function CustomerLayout() {
 
   return (
     <View style={styles.container}>
-      {/* DESKTOP TOP NAVBAR (Urban Company Style) */}
+      {/* DESKTOP TOP NAVBAR (Servicewala Luxury Style) */}
       {isDesktop ? (
         <View style={styles.desktopNav}>
           <View style={styles.navInner}>
@@ -416,7 +420,7 @@ export default function CustomerLayout() {
           </View>
         </View>
       ) : (
-        /* MOBILE TOP HEADER (Clean Urban Company style) */
+        /* MOBILE TOP HEADER (Clean Servicewala style) */
         <View style={[styles.mobileHeader, { paddingTop: Math.max(insets.top, 10) }]}>
           <TouchableOpacity
             onPress={() => router.push('/(customer)')}

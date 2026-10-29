@@ -44,6 +44,19 @@ app/
 │
 ├── _layout.tsx                  # Root layout (SafeAreaProvider, PortalSwitcherBar, NotificationBanner)
 └── index.tsx                    # Entry router (Redirects to /(customer))
+
+src/
+├── components/
+│   ├── home/                    # Modular Customer Home Components (Hero, Strip, Quality, Help, FAQ, etc.)
+│   ├── BrandLogos.tsx           # Multi-brand OEM vector/svg brand badges
+│   ├── NotificationBanner.tsx   # Global reactive feedback toast
+│   └── PortalSwitcherBar.tsx    # Multi-portal switcher header bar
+├── constants/
+│   └── theme.ts                 # Design tokens, color palette, responsive breakpoints
+├── data/
+│   └── mockEcosystemData.ts     # Schema contracts, categories, services, technicians, orders
+└── store/
+    └── useEcosystemStore.ts     # Global cross-portal Zustand reactive store
 ```
 
 ---
