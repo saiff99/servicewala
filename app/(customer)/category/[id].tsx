@@ -9,6 +9,7 @@ import {
   Modal,
   StyleSheet,
   useWindowDimensions,
+  Platform,
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -261,13 +262,25 @@ export default function CategoryScreen() {
         </ScrollView>
       </View>
 
-      {/* STICKY BOTTOM CHECKOUT PILL */}
+      {/* STICKY BOTTOM CHECKOUT PILL (FLOATING ISLAND) */}
       {totalCartCount > 0 && (
-        <View style={styles.stickyCartBar}>
-          <View style={styles.stickyCartInner}>
+        <View
+          style={[
+            styles.stickyCartBarWrapper,
+            !isDesktop && styles.stickyCartBarWrapperMobile,
+          ]}
+          pointerEvents="box-none"
+        >
+          <View style={[styles.stickyCartCapsule, !isDesktop && styles.stickyCartCapsuleMobile]}>
             <View style={styles.stickyCartInfo}>
               <View style={styles.stickyCountWrap}>
-                <Text style={styles.stickyCountText}>{totalCartCount} items in cart</Text>
+                <View style={styles.stickyCartIconBadge}>
+                  <Ionicons name="bag-check" size={15} color="#10B981" />
+                </View>
+                <Text style={styles.stickyCountText}>
+                  {totalCartCount} {totalCartCount === 1 ? 'item' : 'items'} in cart
+                </Text>
+                <Text style={styles.stickyDotSep}>•</Text>
                 <Text style={styles.stickyTotalAmount}>{currencyFormatter(cartSubtotal)}</Text>
               </View>
               <Text style={styles.stickySubText}>Extra ₹50 off applies on online checkout</Text>
@@ -279,7 +292,7 @@ export default function CategoryScreen() {
               activeOpacity={0.88}
             >
               <Text style={styles.stickyProceedText}>View Cart & Checkout</Text>
-              <Ionicons name="arrow-forward" size={16} color="#FFFFFF" />
+              <Ionicons name="arrow-forward" size={15} color="#FFFFFF" />
             </TouchableOpacity>
           </View>
         </View>
@@ -738,26 +751,52 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '800',
   },
-  stickyCartBar: {
-    position: 'absolute',
-    bottom: 54, // Above dev portal switcher
+  stickyCartBarWrapper: {
+    position: (Platform.OS === 'web' ? 'fixed' : 'absolute') as any,
+    bottom: 24,
     left: 0,
     right: 0,
-    backgroundColor: 'rgba(15, 23, 42, 0.98)',
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.1)',
-    paddingVertical: 12,
-    paddingHorizontal: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
     zIndex: 9000,
+    pointerEvents: 'box-none' as any,
   },
-  stickyCartInner: {
-    maxWidth: 960,
-    width: '100%',
-    marginHorizontal: 'auto',
+  stickyCartBarWrapperMobile: {
+    bottom: 74, // Sits comfortably above the mobile bottom tab bar
+    paddingHorizontal: 16,
+  },
+  stickyCartCapsule: {
+    backgroundColor: 'rgba(15, 23, 42, 0.96)',
+    borderRadius: 24,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.16)',
+    paddingVertical: 12,
+    paddingHorizontal: 22,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: 16,
+    gap: 20,
+    maxWidth: 640,
+    width: '100%',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.35,
+    shadowRadius: 24,
+    elevation: 10,
+    ...(Platform.OS === 'web'
+      ? {
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          boxShadow: '0 12px 32px -4px rgba(15, 23, 42, 0.45)',
+        }
+      : {}),
+    pointerEvents: 'auto' as any,
+  },
+  stickyCartCapsuleMobile: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    gap: 12,
   },
   stickyCartInfo: {
     flex: 1,
@@ -765,7 +804,19 @@ const styles = StyleSheet.create({
   stickyCountWrap: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 8,
+  },
+  stickyCartIconBadge: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: 'rgba(16, 185, 129, 0.18)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stickyDotSep: {
+    color: '#64748B',
+    fontSize: 14,
   },
   stickyCountText: {
     color: '#94A3B8',
@@ -774,28 +825,36 @@ const styles = StyleSheet.create({
   },
   stickyTotalAmount: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '900',
+    letterSpacing: -0.3,
   },
   stickySubText: {
     color: '#34D399',
     fontSize: 11,
     fontWeight: '700',
     marginTop: 2,
+    letterSpacing: 0.2,
   },
   stickyProceedBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: THEME.colors.primary,
     paddingHorizontal: 18,
-    paddingVertical: 10,
-    borderRadius: 10,
+    paddingVertical: 11,
+    borderRadius: 14,
     gap: 8,
+    shadowColor: THEME.colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 4,
   },
   stickyProceedText: {
     color: '#FFFFFF',
-    fontSize: 13,
+    fontSize: 13.5,
     fontWeight: '800',
+    letterSpacing: 0.3,
   },
   modalBackdrop: {
     flex: 1,

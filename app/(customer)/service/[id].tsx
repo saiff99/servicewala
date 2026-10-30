@@ -8,6 +8,7 @@ import {
   Image,
   StyleSheet,
   useWindowDimensions,
+  Platform,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -1106,6 +1107,10 @@ const styles = StyleSheet.create({
   /* ════════ RIGHT COLUMN: DESKTOP STICKY BOOKING CARD ════════ */
   productRightCol: {
     width: 360,
+    alignSelf: 'flex-start',
+    position: (Platform.OS === 'web' ? 'sticky' : 'relative') as any,
+    top: 24,
+    zIndex: 20,
   },
   stickyBookingCard: {
     backgroundColor: '#FFFFFF',
@@ -1118,7 +1123,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.08,
     shadowRadius: 18,
     elevation: 4,
-    position: 'sticky' as any,
+    position: (Platform.OS === 'web' ? 'sticky' : 'relative') as any,
     top: 24,
   },
   stickyPriceHeader: {
