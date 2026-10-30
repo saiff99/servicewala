@@ -1,6 +1,20 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Pressable } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Pressable,
+  Animated,
+  Easing,
+  Platform,
+  UIManager,
+  LayoutAnimation,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 const FAQS = [
   {
@@ -40,9 +54,121 @@ const FAQS = [
   },
 ];
 
+interface FaqCardItemProps {
+  faq: (typeof FAQS)[0];
+  isOpen: boolean;
+  onToggle: () => void;
+}
+
+const FaqCardItem: React.FC<FaqCardItemProps> = ({ faq, isOpen, onToggle }) => {
+  const [isHovered, setIsHovered] = useState(false);
+  const [anim] = useState(() => new Animated.Value(isOpen ? 1 : 0));
+
+  useEffect(() => {
+    Animated.timing(anim, {
+      toValue: isOpen ? 1 : 0,
+      duration: 300,
+      easing: Easing.bezier(0.16, 1, 0.3, 1),
+      useNativeDriver: Platform.OS !== 'web',
+    }).start();
+  }, [isOpen, anim]);
+
+  const chevronRotate = anim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '180deg'],
+  });
+
+  const contentTranslateY = anim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [-8, 0],
+  });
+
+  const contentOpacity = anim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 1],
+  });
+
+  return (
+    <View
+      style={[
+        styles.faqCard,
+        isOpen && styles.faqCardOpen,
+        isHovered && !isOpen && styles.faqCardHovered,
+      ]}
+    >
+      <Pressable
+        onPress={onToggle}
+        onHoverIn={() => setIsHovered(true)}
+        onHoverOut={() => setIsHovered(false)}
+        style={styles.faqHeaderRow}
+        accessibilityRole="button"
+        accessibilityState={{ expanded: isOpen }}
+      >
+        <View style={styles.faqQuestionWrap}>
+          <View style={[styles.faqCategoryPill, isOpen && styles.faqCategoryPillOpen]}>
+            <Text style={[styles.faqCategoryText, isOpen && styles.faqCategoryTextOpen]}>
+              {faq.category}
+            </Text>
+          </View>
+          <Text style={[styles.faqQuestionText, isOpen && styles.faqQuestionTextOpen]}>
+            {faq.question}
+          </Text>
+        </View>
+
+        <Animated.View
+          style={[
+            styles.faqChevronWrap,
+            isOpen && styles.faqChevronWrapOpen,
+            {
+              transform: [{ rotate: chevronRotate }],
+            },
+          ]}
+        >
+          <Ionicons
+            name="chevron-down"
+            size={18}
+            color={isOpen ? '#FFFFFF' : '#64748B'}
+          />
+        </Animated.View>
+      </Pressable>
+
+      {(Platform.OS === 'web' || isOpen) && (
+        <Animated.View
+          style={[
+            styles.faqBody,
+            {
+              opacity: contentOpacity,
+              transform: [{ translateY: contentTranslateY }],
+            },
+            Platform.OS === 'web' && ({
+              maxHeight: isOpen ? 320 : 0,
+              opacity: isOpen ? 1 : 0,
+              paddingTop: isOpen ? 14 : 0,
+              paddingBottom: isOpen ? 20 : 0,
+              borderTopWidth: isOpen ? 1 : 0,
+              overflow: 'hidden',
+              pointerEvents: isOpen ? 'auto' : 'none',
+              transition:
+                'max-height 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.28s ease, padding 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-top-width 0.25s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+            } as any),
+          ]}
+        >
+          <Text style={styles.faqAnswerText}>{faq.answer}</Text>
+        </Animated.View>
+      )}
+    </View>
+  );
+};
+
 export default function FaqSection() {
   const [expandedFaqId, setExpandedFaqId] = useState<string | null>('faq-1');
-  const [hoveredFaqId, setHoveredFaqId] = useState<string | null>(null);
+
+  const handleToggle = (id: string) => {
+    if (Platform.OS !== 'web') {
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    }
+    setExpandedFaqId((prev) => (prev === id ? null : id));
+  };
 
   return (
     <View style={styles.sectionWrap}>
@@ -58,54 +184,14 @@ export default function FaqSection() {
       </View>
 
       <View style={styles.faqContainer}>
-        {FAQS.map((faq) => {
-          const isOpen = expandedFaqId === faq.id;
-          const isHovered = hoveredFaqId === faq.id;
-          return (
-            <View
-              key={faq.id}
-              style={[
-                styles.faqCard,
-                isOpen && styles.faqCardOpen,
-                isHovered && !isOpen && styles.faqCardHovered,
-              ]}
-            >
-              <Pressable
-                onPress={() => setExpandedFaqId(isOpen ? null : faq.id)}
-                onHoverIn={() => setHoveredFaqId(faq.id)}
-                onHoverOut={() => setHoveredFaqId(null)}
-                style={styles.faqHeaderRow}
-                accessibilityRole="button"
-                accessibilityState={{ expanded: isOpen }}
-              >
-                <View style={styles.faqQuestionWrap}>
-                  <View style={[styles.faqCategoryPill, isOpen && styles.faqCategoryPillOpen]}>
-                    <Text style={[styles.faqCategoryText, isOpen && styles.faqCategoryTextOpen]}>
-                      {faq.category}
-                    </Text>
-                  </View>
-                  <Text style={[styles.faqQuestionText, isOpen && styles.faqQuestionTextOpen]}>
-                    {faq.question}
-                  </Text>
-                </View>
-
-                <View style={[styles.faqChevronWrap, isOpen && styles.faqChevronWrapOpen]}>
-                  <Ionicons
-                    name={isOpen ? 'chevron-up' : 'chevron-down'}
-                    size={18}
-                    color={isOpen ? '#FFFFFF' : '#64748B'}
-                  />
-                </View>
-              </Pressable>
-
-              {isOpen && (
-                <View style={styles.faqBody}>
-                  <Text style={styles.faqAnswerText}>{faq.answer}</Text>
-                </View>
-              )}
-            </View>
-          );
-        })}
+        {FAQS.map((faq) => (
+          <FaqCardItem
+            key={faq.id}
+            faq={faq}
+            isOpen={expandedFaqId === faq.id}
+            onToggle={() => handleToggle(faq.id)}
+          />
+        ))}
       </View>
     </View>
   );
@@ -171,10 +257,12 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.03,
     shadowRadius: 6,
     elevation: 2,
-    transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+    transition:
+      'border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease, background-color 0.25s ease',
   } as any,
   faqCardOpen: {
     borderColor: '#93C5FD',
+    backgroundColor: '#FFFFFF',
     shadowColor: '#2563EB',
     shadowOpacity: 0.08,
     shadowRadius: 14,
@@ -203,7 +291,8 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     borderRadius: 6,
     marginBottom: 6,
-  },
+    transition: 'background-color 0.25s ease',
+  } as any,
   faqCategoryPillOpen: {
     backgroundColor: '#EFF6FF',
   },
@@ -213,7 +302,8 @@ const styles = StyleSheet.create({
     color: '#64748B',
     letterSpacing: 0.4,
     textTransform: 'uppercase',
-  },
+    transition: 'color 0.25s ease',
+  } as any,
   faqCategoryTextOpen: {
     color: '#2563EB',
   },
@@ -223,7 +313,8 @@ const styles = StyleSheet.create({
     color: '#0F172A',
     lineHeight: 23,
     letterSpacing: -0.2,
-  },
+    transition: 'color 0.25s ease',
+  } as any,
   faqQuestionTextOpen: {
     color: '#1E40AF',
   },
@@ -236,16 +327,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 1,
     borderColor: '#E2E8F0',
-  },
+    transition: 'background-color 0.25s ease, border-color 0.25s ease',
+  } as any,
   faqChevronWrapOpen: {
     backgroundColor: '#2563EB',
     borderColor: '#2563EB',
   },
   faqBody: {
     paddingHorizontal: 20,
-    paddingBottom: 20,
-    paddingTop: 14,
-    borderTopWidth: 1,
     borderTopColor: '#F1F5F9',
     backgroundColor: '#FAFCFF',
   },

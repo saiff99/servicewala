@@ -3,7 +3,6 @@ import {
   View,
   Text,
   TouchableOpacity,
-  Pressable,
   TextInput,
   StyleSheet,
   useWindowDimensions,
@@ -16,32 +15,28 @@ import { useEcosystemStore } from '../../src/store/useEcosystemStore';
 import { THEME } from '../../src/constants/theme';
 import { FloatingHelpCapsule } from '../../src/components/home';
 
-const NAV_MENU_ITEMS = [
-  {
-    id: 'home',
-    label: 'Home',
-    path: '/(customer)',
-    isActive: (p: string) => p === '/(customer)' || p === '/(customer)/',
-  },
-  {
-    id: 'computer',
-    label: 'Computer',
-    path: '/(customer)/category/gadgets-repair',
-    isActive: (p: string) => p.includes('gadgets-repair'),
-  },
-  {
-    id: 'printer',
-    label: 'Printer',
-    path: '/(customer)/category/printer-repair',
-    isActive: (p: string) => p.includes('printer-repair'),
-  },
-  {
-    id: 'ac',
-    label: 'Air Conditioner',
-    path: '/(customer)/category/ac-appliances',
-    isActive: (p: string) => p.includes('ac-appliances'),
-  },
-];
+function getCategoryIcon(iconName: string) {
+  switch (iconName) {
+    case 'Snowflake':
+      return 'snow-outline';
+    case 'Sparkles':
+      return 'sparkles-outline';
+    case 'Wrench':
+      return 'construct-outline';
+    case 'Flower2':
+      return 'flower-outline';
+    case 'Scissors':
+      return 'cut-outline';
+    case 'Paintbrush':
+      return 'color-palette-outline';
+    case 'Laptop':
+      return 'laptop-outline';
+    case 'Print':
+      return 'print-outline';
+    default:
+      return 'apps-outline';
+  }
+}
 
 export default function CustomerLayout() {
   const { width } = useWindowDimensions();
@@ -49,17 +44,19 @@ export default function CustomerLayout() {
   const pathname = usePathname();
   const isDesktop = width >= THEME.breakpoints.desktopMin;
 
-  const { cart, orders } = useEcosystemStore();
+  const { cart, orders, categories } = useEcosystemStore();
 
   const [headerSearch, setHeaderSearch] = useState('');
   const [selectedLocation, setSelectedLocation] = useState('All India');
   const [locationSearchQuery, setLocationSearchQuery] = useState('');
   const [showLocationPicker, setShowLocationPicker] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const [hoveredNav, setHoveredNav] = useState<string | null>(null);
+  const [showServicesMenu, setShowServicesMenu] = useState(false);
+  const [hoveredMenuCat, setHoveredMenuCat] = useState<string | null>(null);
 
   const locationDropdownRef = useRef<any>(null);
   const profileDropdownRef = useRef<any>(null);
+  const servicesDropdownRef = useRef<any>(null);
   const mobileLocationRef = useRef<any>(null);
 
   useEffect(() => {
@@ -89,17 +86,27 @@ export default function CustomerLayout() {
             setShowProfileMenu(false);
           }
         }
+        if (showServicesMenu) {
+          const isInsideServices =
+            servicesDropdownRef.current &&
+            servicesDropdownRef.current.contains &&
+            servicesDropdownRef.current.contains(target);
+          if (!isInsideServices) {
+            setShowServicesMenu(false);
+          }
+        }
       };
 
       const handleKeyDown = (event: KeyboardEvent) => {
         if (event.key === 'Escape') {
           setShowLocationPicker(false);
           setShowProfileMenu(false);
+          setShowServicesMenu(false);
           setLocationSearchQuery('');
         }
       };
 
-      if (showLocationPicker || showProfileMenu) {
+      if (showLocationPicker || showProfileMenu || showServicesMenu) {
         document.addEventListener('mousedown', handleOutsideClick);
         document.addEventListener('touchstart', handleOutsideClick);
         document.addEventListener('keydown', handleKeyDown);
@@ -110,7 +117,7 @@ export default function CustomerLayout() {
         };
       }
     }
-  }, [showLocationPicker, showProfileMenu]);
+  }, [showLocationPicker, showProfileMenu, showServicesMenu]);
 
   const CITIES = [
     'All India',
@@ -139,7 +146,7 @@ export default function CustomerLayout() {
       {isDesktop ? (
         <View style={styles.desktopNav}>
           <View style={styles.navInner}>
-            {/* Left: Brand + Nav Links */}
+            {/* Left: Brand + Location Selector */}
             <View style={styles.leftNavGroup}>
               {/* Brand Logo (UC Style square badge + 2 stacked lines) */}
               <TouchableOpacity
@@ -156,44 +163,14 @@ export default function CustomerLayout() {
                 </View>
               </TouchableOpacity>
 
-              {/* Navigation Links with Hover States (Home, Computer, Printer, Air Conditioner) */}
-              <View style={styles.navLinksRow}>
-                {NAV_MENU_ITEMS.map((item) => {
-                  const isActive = item.isActive(pathname);
-                  const isHovered = hoveredNav === item.id;
-                  return (
-                    <Pressable
-                      key={item.id}
-                      onPress={() => router.push(item.path as any)}
-                      onHoverIn={() => setHoveredNav(item.id)}
-                      onHoverOut={() => setHoveredNav(null)}
-                      style={[
-                        styles.textNavLink,
-                        isActive && styles.textNavLinkActive,
-                        isHovered && styles.textNavLinkHovered,
-                      ]}
-                    >
-                      <Text
-                        style={[
-                          styles.textNavLinkLabel,
-                          isActive && styles.textNavLinkLabelActive,
-                          isHovered && styles.textNavLinkLabelHovered,
-                        ]}
-                      >
-                        {item.label}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
-            </View>
-
-            {/* Center-Right: Location Selector + Search Bar */}
-            <View style={styles.centerInputsGroup}>
-              {/* Location Selector Box */}
+              {/* Location Selector Box (Positioned next to Logo like Urban Company) */}
               <View ref={locationDropdownRef} style={styles.locationDropdownWrap}>
                 <TouchableOpacity
-                  onPress={() => setShowLocationPicker(!showLocationPicker)}
+                  onPress={() => {
+                    setShowLocationPicker(!showLocationPicker);
+                    if (showServicesMenu) setShowServicesMenu(false);
+                    if (showProfileMenu) setShowProfileMenu(false);
+                  }}
                   style={styles.locationBox}
                   activeOpacity={0.8}
                 >
@@ -272,32 +249,185 @@ export default function CustomerLayout() {
                   </View>
                 )}
               </View>
-
-              {/* Search Bar Box */}
-              <View style={styles.searchBox}>
-                <Ionicons name="search-outline" size={17} color="#64748B" />
-                <TextInput
-                  value={headerSearch}
-                  onChangeText={setHeaderSearch}
-                  placeholder="Search for 'Facial', 'AC Repair'..."
-                  placeholderTextColor="#9CA3AF"
-                  style={styles.headerSearchInput}
-                  onSubmitEditing={() => {
-                    if (headerSearch.trim()) {
-                      router.push(`/(customer)?q=${encodeURIComponent(headerSearch)}`);
-                    }
-                  }}
-                />
-                {headerSearch.length > 0 && (
-                  <TouchableOpacity onPress={() => setHeaderSearch('')} style={{ padding: 4 }}>
-                    <Ionicons name="close-circle" size={16} color="#9CA3AF" />
-                  </TouchableOpacity>
-                )}
-              </View>
             </View>
 
-            {/* Right: Circular Cart & Profile Buttons */}
+            {/* Center: Search Bar Box */}
+            <View style={styles.searchBox}>
+              <Ionicons name="search-outline" size={17} color="#64748B" />
+              <TextInput
+                value={headerSearch}
+                onChangeText={setHeaderSearch}
+                placeholder="Search for 'AC Repair', 'Cleaning', 'Salon'..."
+                placeholderTextColor="#9CA3AF"
+                style={styles.headerSearchInput}
+                onSubmitEditing={() => {
+                  if (headerSearch.trim()) {
+                    router.push(`/(customer)?q=${encodeURIComponent(headerSearch)}`);
+                  }
+                }}
+              />
+              {headerSearch.length > 0 && (
+                <TouchableOpacity onPress={() => setHeaderSearch('')} style={{ padding: 4 }}>
+                  <Ionicons name="close-circle" size={16} color="#9CA3AF" />
+                </TouchableOpacity>
+              )}
+            </View>
+
+            {/* Right: All Services + Direct My Bookings + Partner CTA + Cart + Profile */}
             <View style={styles.rightActionsGroup}>
+              {/* All Services Mega Dropdown */}
+              <View ref={servicesDropdownRef} style={styles.servicesDropdownWrap}>
+                <TouchableOpacity
+                  onPress={() => {
+                    setShowServicesMenu(!showServicesMenu);
+                    if (showLocationPicker) setShowLocationPicker(false);
+                    if (showProfileMenu) setShowProfileMenu(false);
+                  }}
+                  style={[
+                    styles.allServicesNavBtn,
+                    showServicesMenu && styles.allServicesNavBtnActive,
+                  ]}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons
+                    name="grid-outline"
+                    size={16}
+                    color={showServicesMenu ? '#2563EB' : '#0F172A'}
+                  />
+                  <Text
+                    style={[
+                      styles.allServicesNavBtnText,
+                      showServicesMenu && styles.allServicesNavBtnTextActive,
+                    ]}
+                  >
+                    All Services
+                  </Text>
+                  <Ionicons
+                    name="chevron-down"
+                    size={13}
+                    color={showServicesMenu ? '#2563EB' : '#64748B'}
+                  />
+                </TouchableOpacity>
+
+                {showServicesMenu && (
+                  <View style={styles.servicesDropdownMenu}>
+                    {/* Header */}
+                    <View style={styles.servicesMenuHeader}>
+                      <View>
+                        <Text style={styles.servicesMenuTitle}>All Services</Text>
+                        <Text style={styles.servicesMenuSub}>Verified doorstep specialists</Text>
+                      </View>
+                      <View style={styles.servicesMenuCountBadge}>
+                        <Text style={styles.servicesMenuCountText}>
+                          {categories.length} Categories
+                        </Text>
+                      </View>
+                    </View>
+
+                    {/* 2-Column Grid */}
+                    <View style={styles.servicesMenuGrid}>
+                      {categories.map((cat) => (
+                        <TouchableOpacity
+                          key={cat.id}
+                          onPress={() => {
+                            setShowServicesMenu(false);
+                            router.push(`/(customer)/category/${cat.id}`);
+                          }}
+                          onPressIn={() => setHoveredMenuCat(cat.id)}
+                          onPressOut={() => setHoveredMenuCat(null)}
+                          style={[
+                            styles.servicesMenuItem,
+                            hoveredMenuCat === cat.id && styles.servicesMenuItemHovered,
+                          ]}
+                          activeOpacity={0.7}
+                        >
+                          <View
+                            style={[
+                              styles.servicesMenuIconWrap,
+                              { backgroundColor: cat.tagColor + '18' },
+                            ]}
+                          >
+                            <Ionicons
+                              name={getCategoryIcon(cat.icon) as any}
+                              size={18}
+                              color={cat.tagColor}
+                            />
+                          </View>
+                          <View style={styles.servicesMenuItemInfo}>
+                            <Text style={styles.servicesMenuItemName} numberOfLines={1}>
+                              {cat.name}
+                            </Text>
+                            <Text style={styles.servicesMenuItemCount}>
+                              {cat.serviceCount} services • 30-Day Guarantee
+                            </Text>
+                          </View>
+                          <Ionicons name="chevron-forward" size={13} color="#CBD5E1" />
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+
+                    {/* Footer Trust Bar */}
+                    <View style={styles.servicesMenuFooter}>
+                      <View style={styles.servicesMenuFooterBadge}>
+                        <Ionicons name="shield-checkmark" size={13} color="#059669" />
+                        <Text style={styles.servicesMenuFooterText}>
+                          Standardized Pricing & Free Revisit
+                        </Text>
+                      </View>
+                      <TouchableOpacity
+                        onPress={() => {
+                          setShowServicesMenu(false);
+                          router.push('/(customer)');
+                        }}
+                      >
+                        <Text style={styles.servicesMenuFooterLink}>View All Categories →</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                )}
+              </View>
+
+              {/* Direct "My Bookings" Button */}
+              <TouchableOpacity
+                onPress={() => router.push('/(customer)/bookings')}
+                style={[
+                  styles.bookingsNavBtn,
+                  pathname.includes('bookings') && styles.bookingsNavBtnActive,
+                ]}
+                activeOpacity={0.8}
+              >
+                <Ionicons
+                  name={pathname.includes('bookings') ? 'calendar' : 'calendar-outline'}
+                  size={16}
+                  color={pathname.includes('bookings') ? '#991B1B' : '#0F172A'}
+                />
+                <Text
+                  style={[
+                    styles.bookingsNavBtnText,
+                    pathname.includes('bookings') && styles.bookingsNavBtnTextActive,
+                  ]}
+                >
+                  My Bookings
+                </Text>
+                {activeOrdersCount > 0 && (
+                  <View style={styles.bookingsBadge}>
+                    <Text style={styles.bookingsBadgeText}>{activeOrdersCount} Active</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+
+              {/* Partner Portal Link (Visible on wide screens) */}
+              {width >= 1140 && (
+                <TouchableOpacity
+                  onPress={() => router.push('/(partner)')}
+                  style={styles.partnerNavBtn}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons name="briefcase-outline" size={15} color="#059669" />
+                  <Text style={styles.partnerNavBtnText}>Partner App</Text>
+                </TouchableOpacity>
+              )}
+
               {/* Cart Button */}
               <TouchableOpacity
                 onPress={() => router.push('/(customer)/checkout')}
@@ -681,7 +811,7 @@ const styles = StyleSheet.create({
   leftNavGroup: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 28,
+    gap: 16,
   },
   logoRow: {
     flexDirection: 'row',
@@ -719,69 +849,213 @@ const styles = StyleSheet.create({
     lineHeight: 15,
     letterSpacing: -0.3,
   },
-  navLinksRow: {
+  /* All Services Dropdown */
+  servicesDropdownWrap: {
+    position: 'relative',
+    zIndex: 130,
+  },
+  allServicesNavBtn: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 7,
+    height: 42,
+    paddingHorizontal: 13,
+    borderRadius: 9,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+  } as any,
+  allServicesNavBtnActive: {
+    borderColor: '#2563EB',
+    backgroundColor: '#EFF6FF',
+  },
+  allServicesNavBtnText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#0F172A',
+  },
+  allServicesNavBtnTextActive: {
+    color: '#2563EB',
+  },
+  servicesDropdownMenu: {
+    position: 'absolute',
+    top: 48,
+    right: 0,
+    width: 580,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.16,
+    shadowRadius: 30,
+    elevation: 12,
+    zIndex: 250,
+    overflow: 'hidden',
+  },
+  servicesMenuHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+    backgroundColor: '#F8FAFC',
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+  },
+  servicesMenuTitle: {
+    fontSize: 13.5,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  servicesMenuSub: {
+    fontSize: 11,
+    color: '#64748B',
+    fontWeight: '500',
+    marginTop: 1,
+  },
+  servicesMenuCountBadge: {
+    backgroundColor: '#E2E8F0',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  servicesMenuCountText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#334155',
+  },
+  servicesMenuGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    padding: 10,
     gap: 8,
   },
-  textNavLink: {
+  servicesMenuItem: {
+    width: '48.5%',
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 8,
-    backgroundColor: 'transparent',
+    gap: 10,
+    paddingVertical: 9,
+    paddingHorizontal: 10,
+    borderRadius: 10,
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: 'transparent',
     cursor: 'pointer',
-    transition: 'all 0.22s cubic-bezier(0.16, 1, 0.3, 1)',
+    transition: 'all 0.18s ease',
   } as any,
-  textNavLinkActive: {
-    backgroundColor: '#F1F5F9',
+  servicesMenuItemHovered: {
+    backgroundColor: '#F8FAFC',
     borderColor: '#E2E8F0',
   },
-  textNavLinkHovered: {
-    backgroundColor: '#000000',
-    borderColor: '#000000',
-    transform: [{ translateY: -1 }],
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.16,
-    shadowRadius: 8,
-    elevation: 4,
+  servicesMenuIconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  textNavLinkLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#475569',
-    transition: 'color 0.2s ease',
-  } as any,
-  textNavLinkLabelActive: {
+  servicesMenuItemInfo: {
+    flex: 1,
+  },
+  servicesMenuItemName: {
+    fontSize: 12.5,
+    fontWeight: '700',
     color: '#0F172A',
-    fontWeight: '600',
   },
-  textNavLinkLabelHovered: {
-    color: '#FFFFFF',
-    fontWeight: '600',
+  servicesMenuItemCount: {
+    fontSize: 10.5,
+    color: '#64748B',
+    fontWeight: '500',
+    marginTop: 2,
   },
-  activeOrdersDot: {
+  servicesMenuFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    backgroundColor: '#F8FAFC',
+    borderTopWidth: 1,
+    borderTopColor: '#F1F5F9',
+  },
+  servicesMenuFooterBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  servicesMenuFooterText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#059669',
+  },
+  servicesMenuFooterLink: {
+    fontSize: 11.5,
+    fontWeight: '700',
+    color: '#2563EB',
+    cursor: 'pointer',
+  } as any,
+
+  /* Direct Bookings Button */
+  bookingsNavBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 7,
+    height: 42,
+    paddingHorizontal: 13,
+    borderRadius: 9,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+  } as any,
+  bookingsNavBtnActive: {
+    backgroundColor: '#FEF2F2',
+    borderColor: '#FECACA',
+  },
+  bookingsNavBtnText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#0F172A',
+  },
+  bookingsNavBtnTextActive: {
+    color: '#991B1B',
+  },
+  bookingsBadge: {
     backgroundColor: '#10B981',
-    borderRadius: 10,
     paddingHorizontal: 6,
-    paddingVertical: 1,
+    paddingVertical: 2,
+    borderRadius: 6,
   },
-  activeOrdersText: {
+  bookingsBadgeText: {
     color: '#FFFFFF',
     fontSize: 10,
     fontWeight: '800',
   },
-  centerInputsGroup: {
+
+  /* Partner CTA */
+  partnerNavBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    flex: 1,
-    justifyContent: 'flex-end',
-    maxWidth: 620,
+    gap: 6,
+    height: 42,
+    paddingHorizontal: 12,
+    borderRadius: 9,
+    backgroundColor: '#F0FDF4',
+    borderWidth: 1,
+    borderColor: '#DCFCE7',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+  } as any,
+  partnerNavBtnText: {
+    fontSize: 12.5,
+    fontWeight: '700',
+    color: '#166534',
   },
   locationDropdownWrap: {
     position: 'relative',
@@ -875,12 +1149,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: '#E2E8F0',
     borderRadius: 8,
     height: 42,
     paddingHorizontal: 12,
     gap: 8,
-    width: 300,
+    flex: 1,
+    maxWidth: 360,
+    minWidth: 200,
   },
   headerSearchInput: {
     flex: 1,
@@ -893,7 +1169,7 @@ const styles = StyleSheet.create({
   rightActionsGroup: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 10,
   },
   profileWrapper: {
     position: 'relative',

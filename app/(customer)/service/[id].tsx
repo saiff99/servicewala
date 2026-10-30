@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,11 +9,73 @@ import {
   StyleSheet,
   useWindowDimensions,
   Platform,
+  Animated,
+  Easing,
+  LayoutAnimation,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { THEME, currencyFormatter } from '../../../src/constants/theme';
 import { useEcosystemStore } from '../../../src/store/useEcosystemStore';
+
+interface ServiceFaqItemProps {
+  faq: { q: string; a: string };
+  isOpen: boolean;
+  onToggle: () => void;
+}
+
+const ServiceFaqItem: React.FC<ServiceFaqItemProps> = ({ faq, isOpen, onToggle }) => {
+  const [anim] = useState(() => new Animated.Value(isOpen ? 1 : 0));
+
+  useEffect(() => {
+    Animated.timing(anim, {
+      toValue: isOpen ? 1 : 0,
+      duration: 280,
+      easing: Easing.bezier(0.16, 1, 0.3, 1),
+      useNativeDriver: Platform.OS !== 'web',
+    }).start();
+  }, [isOpen, anim]);
+
+  const chevronRotate = anim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '180deg'],
+  });
+
+  return (
+    <View style={[styles.faqCard, isOpen && styles.faqCardOpen]}>
+      <Pressable onPress={onToggle} style={styles.faqHeader}>
+        <Text style={[styles.faqQuestion, isOpen && styles.faqQuestionOpen]}>{faq.q}</Text>
+        <Animated.View style={{ transform: [{ rotate: chevronRotate }] }}>
+          <Ionicons
+            name="chevron-down"
+            size={16}
+            color={isOpen ? '#2563EB' : '#64748B'}
+          />
+        </Animated.View>
+      </Pressable>
+      {(Platform.OS === 'web' || isOpen) && (
+        <View
+          style={[
+            styles.faqBody,
+            Platform.OS === 'web' && ({
+              maxHeight: isOpen ? 220 : 0,
+              opacity: isOpen ? 1 : 0,
+              paddingTop: isOpen ? 8 : 0,
+              paddingBottom: isOpen ? 14 : 0,
+              borderTopWidth: isOpen ? 1 : 0,
+              overflow: 'hidden',
+              pointerEvents: isOpen ? 'auto' : 'none',
+              transition:
+                'max-height 0.32s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease, padding 0.32s cubic-bezier(0.16, 1, 0.3, 1), border-top-width 0.25s ease',
+            } as any),
+          ]}
+        >
+          <Text style={styles.faqAnswer}>{faq.a}</Text>
+        </View>
+      )}
+    </View>
+  );
+};
 
 export default function ServiceDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -317,29 +379,19 @@ export default function ServiceDetailsScreen() {
               <View style={styles.sectionCard}>
                 <Text style={styles.sectionHeading}>Frequently Asked Questions</Text>
                 <View style={styles.faqList}>
-                  {SERVICE_FAQS.map((faq, fIdx) => {
-                    const isOpen = openFaqIndex === fIdx;
-                    return (
-                      <View key={fIdx} style={styles.faqCard}>
-                        <Pressable
-                          onPress={() => setOpenFaqIndex(isOpen ? null : fIdx)}
-                          style={styles.faqHeader}
-                        >
-                          <Text style={styles.faqQuestion}>{faq.q}</Text>
-                          <Ionicons
-                            name={isOpen ? 'chevron-up' : 'chevron-down'}
-                            size={16}
-                            color="#64748B"
-                          />
-                        </Pressable>
-                        {isOpen && (
-                          <View style={styles.faqBody}>
-                            <Text style={styles.faqAnswer}>{faq.a}</Text>
-                          </View>
-                        )}
-                      </View>
-                    );
-                  })}
+                  {SERVICE_FAQS.map((faq, fIdx) => (
+                    <ServiceFaqItem
+                      key={fIdx}
+                      faq={faq}
+                      isOpen={openFaqIndex === fIdx}
+                      onToggle={() => {
+                        if (Platform.OS !== 'web') {
+                          LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+                        }
+                        setOpenFaqIndex((prev) => (prev === fIdx ? null : fIdx));
+                      }}
+                    />
+                  ))}
                 </View>
               </View>
 
@@ -1005,25 +1057,32 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E2E8F0',
     overflow: 'hidden',
+    transition: 'border-color 0.25s ease, background-color 0.25s ease',
+  } as any,
+  faqCardOpen: {
+    backgroundColor: '#FFFFFF',
+    borderColor: '#93C5FD',
   },
   faqHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: 14,
-  },
+    cursor: 'pointer',
+  } as any,
   faqQuestion: {
     fontSize: 13.5,
     fontWeight: '700',
     color: '#0F172A',
     flex: 1,
     marginRight: 10,
+    transition: 'color 0.25s ease',
+  } as any,
+  faqQuestionOpen: {
+    color: '#1D4ED8',
   },
   faqBody: {
     paddingHorizontal: 14,
-    paddingBottom: 14,
-    paddingTop: 4,
-    borderTopWidth: 1,
     borderTopColor: '#F1F5F9',
   },
   faqAnswer: {

@@ -419,16 +419,14 @@ export default function FloatingHelpCapsule({ onScrollToServices }: FloatingHelp
           </>
         ) : isDesktop ? (
           <>
-            {/* Desktop Full Pill */}
+            {/* Desktop Compact Pill */}
             <View style={styles.floatingBeaconWrap}>
               <View style={styles.floatingBeaconDot} />
             </View>
 
             <Ionicons name="chatbubbles" size={16} color="#FFFFFF" />
 
-            <Text style={styles.floatingPillText}>
-              Need Help Choosing? Chat with Tech
-            </Text>
+            <Text style={styles.floatingPillText}>Need Help?</Text>
 
             <View style={styles.floatingLiveBadge}>
               <Text style={styles.floatingLiveBadgeText}>LIVE</Text>
@@ -487,20 +485,21 @@ const styles = StyleSheet.create({
   floatingPillBtn: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: 8,
     backgroundColor: '#0F172A',
+    height: 44,
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 30,
+    borderRadius: 22,
     borderWidth: 1.5,
     borderColor: '#334155',
     shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 8 },
+    shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.28,
-    shadowRadius: 18,
+    shadowRadius: 16,
     elevation: 8,
     cursor: 'pointer',
-    transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+    transition: 'all 0.22s cubic-bezier(0.16, 1, 0.3, 1)',
   } as any,
   floatingPillBtnMobile: {
     width: 44,
@@ -535,7 +534,7 @@ const styles = StyleSheet.create({
     shadowRadius: 22,
   } as any,
   floatingPillText: {
-    fontSize: 13,
+    fontSize: 13.5,
     fontWeight: '800',
     color: '#FFFFFF',
     letterSpacing: 0.3,
