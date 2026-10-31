@@ -31,6 +31,7 @@ export const PortalSwitcherBar: React.FC = () => {
   const isDesktop = width >= THEME.breakpoints.desktopMin;
 
   const totalCartCount = Object.values(cart).reduce((a, b) => a + b, 0);
+  const hasFloatingCart = totalCartCount > 0 && !(pathname && pathname.includes('/checkout'));
   const pendingOrdersCount = orders.filter((o) => o.status === 'requested').length;
   const currentPartner = technicians.find((t) => t.id === currentPartnerId) || technicians[0];
 
@@ -68,7 +69,10 @@ export const PortalSwitcherBar: React.FC = () => {
       <View
         style={[
           styles.container,
-          !isDesktop && styles.containerMobile,
+          !isDesktop &&
+            (hasFloatingCart
+              ? styles.containerMobileWithCart
+              : styles.containerMobile),
         ]}
         pointerEvents="box-none"
       >
@@ -222,6 +226,7 @@ export const PortalSwitcherBar: React.FC = () => {
           activeOpacity={0.85}
           style={[
             styles.circleTriggerBtn,
+            !isDesktop && styles.circleTriggerBtnMobile,
             isMenuOpen && styles.circleTriggerBtnActive,
             isHovered && styles.circleTriggerBtnHovered,
           ]}
@@ -258,9 +263,18 @@ const styles = StyleSheet.create({
     left: 20,
     zIndex: 99999,
     alignItems: 'flex-start',
+    ...(Platform.OS === 'web'
+      ? {
+          transition: 'bottom 0.28s cubic-bezier(0.16, 1, 0.3, 1)',
+        }
+      : {}),
   },
   containerMobile: {
-    bottom: 80, // Sits above mobile bottom tab bar
+    bottom: 74, // Sits above mobile bottom tab bar
+    left: 16,
+  },
+  containerMobileWithCart: {
+    bottom: 136, // Sits cleanly above sticky checkout cart on mobile
     left: 16,
   },
 
@@ -283,6 +297,11 @@ const styles = StyleSheet.create({
     position: 'relative',
     transition: 'all 0.22s cubic-bezier(0.16, 1, 0.3, 1)',
   } as any,
+  circleTriggerBtnMobile: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+  },
   circleTriggerBtnActive: {
     backgroundColor: '#1E293B',
     borderColor: '#64748B',

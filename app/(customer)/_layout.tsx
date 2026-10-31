@@ -7,6 +7,10 @@ import {
   StyleSheet,
   useWindowDimensions,
   Platform,
+  Image,
+  Modal,
+  ScrollView,
+  Pressable,
 } from 'react-native';
 import { Slot, router, usePathname } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -14,6 +18,15 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useEcosystemStore } from '../../src/store/useEcosystemStore';
 import { THEME } from '../../src/constants/theme';
 import { FloatingHelpCapsule } from '../../src/components/home';
+
+const AVATAR_PRESETS = [
+  { id: 'av-1', label: 'Saif', url: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&q=80' },
+  { id: 'av-2', label: 'Ananya', url: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&q=80' },
+  { id: 'av-3', label: 'Rahul', url: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=200&q=80' },
+  { id: 'av-4', label: 'Pooja', url: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=200&q=80' },
+  { id: 'av-5', label: 'Amit', url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80' },
+  { id: 'av-6', label: 'Neha', url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&q=80' },
+];
 
 function getCategoryIcon(iconName: string) {
   switch (iconName) {
@@ -44,7 +57,8 @@ export default function CustomerLayout() {
   const pathname = usePathname();
   const isDesktop = width >= THEME.breakpoints.desktopMin;
 
-  const { cart, orders, categories } = useEcosystemStore();
+  const { cart, orders, categories, customerProfile, updateCustomerProfile } =
+    useEcosystemStore();
 
   const [headerSearch, setHeaderSearch] = useState('');
   const [selectedLocation, setSelectedLocation] = useState('All India');
@@ -53,6 +67,22 @@ export default function CustomerLayout() {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showServicesMenu, setShowServicesMenu] = useState(false);
   const [hoveredMenuCat, setHoveredMenuCat] = useState<string | null>(null);
+
+  // Edit Profile Modal States
+  const [showEditProfileModal, setShowEditProfileModal] = useState(false);
+  const [editName, setEditName] = useState(customerProfile.name);
+  const [editPhone, setEditPhone] = useState(customerProfile.phone);
+  const [editEmail, setEditEmail] = useState(customerProfile.email);
+  const [editAvatar, setEditAvatar] = useState(customerProfile.avatarUrl);
+
+  const handleOpenEditProfile = () => {
+    setEditName(customerProfile.name);
+    setEditPhone(customerProfile.phone);
+    setEditEmail(customerProfile.email);
+    setEditAvatar(customerProfile.avatarUrl);
+    setShowProfileMenu(false);
+    setShowEditProfileModal(true);
+  };
 
   const locationDropdownRef = useRef<any>(null);
   const profileDropdownRef = useRef<any>(null);
@@ -326,44 +356,58 @@ export default function CustomerLayout() {
 
                     {/* 2-Column Grid */}
                     <View style={styles.servicesMenuGrid}>
-                      {categories.map((cat) => (
-                        <TouchableOpacity
-                          key={cat.id}
-                          onPress={() => {
-                            setShowServicesMenu(false);
-                            router.push(`/(customer)/category/${cat.id}`);
-                          }}
-                          onPressIn={() => setHoveredMenuCat(cat.id)}
-                          onPressOut={() => setHoveredMenuCat(null)}
-                          style={[
-                            styles.servicesMenuItem,
-                            hoveredMenuCat === cat.id && styles.servicesMenuItemHovered,
-                          ]}
-                          activeOpacity={0.7}
-                        >
-                          <View
+                      {categories.map((cat) => {
+                        const isHovered = hoveredMenuCat === cat.id;
+                        return (
+                          <Pressable
+                            key={cat.id}
+                            onPress={() => {
+                              setShowServicesMenu(false);
+                              router.push(`/(customer)/category/${cat.id}`);
+                            }}
+                            onHoverIn={() => setHoveredMenuCat(cat.id)}
+                            onHoverOut={() => setHoveredMenuCat(null)}
                             style={[
-                              styles.servicesMenuIconWrap,
-                              { backgroundColor: cat.tagColor + '18' },
+                              styles.servicesMenuItem,
+                              isHovered && styles.servicesMenuItemHovered,
                             ]}
+                            accessibilityRole="button"
                           >
+                            <View
+                              style={[
+                                styles.servicesMenuIconWrap,
+                                isHovered && styles.servicesMenuIconWrapHovered,
+                              ]}
+                            >
+                              <Ionicons
+                                name={getCategoryIcon(cat.icon) as any}
+                                size={19}
+                                color={isHovered ? '#FFFFFF' : '#0F172A'}
+                              />
+                            </View>
+                            <View style={styles.servicesMenuItemInfo}>
+                              <Text
+                                style={[
+                                  styles.servicesMenuItemName,
+                                  isHovered && styles.servicesMenuItemNameHovered,
+                                ]}
+                                numberOfLines={1}
+                              >
+                                {cat.name}
+                              </Text>
+                              <Text style={styles.servicesMenuItemCount}>
+                                {cat.serviceCount} services • 30-Day Guarantee
+                              </Text>
+                            </View>
                             <Ionicons
-                              name={getCategoryIcon(cat.icon) as any}
-                              size={18}
-                              color={cat.tagColor}
+                              name="chevron-forward"
+                              size={15}
+                              color={isHovered ? '#0F172A' : '#CBD5E1'}
+                              style={isHovered ? { transform: [{ translateX: 3 }] } : undefined}
                             />
-                          </View>
-                          <View style={styles.servicesMenuItemInfo}>
-                            <Text style={styles.servicesMenuItemName} numberOfLines={1}>
-                              {cat.name}
-                            </Text>
-                            <Text style={styles.servicesMenuItemCount}>
-                              {cat.serviceCount} services • 30-Day Guarantee
-                            </Text>
-                          </View>
-                          <Ionicons name="chevron-forward" size={13} color="#CBD5E1" />
-                        </TouchableOpacity>
-                      ))}
+                          </Pressable>
+                        );
+                      })}
                     </View>
 
                     {/* Footer Trust Bar */}
@@ -416,18 +460,6 @@ export default function CustomerLayout() {
                 )}
               </TouchableOpacity>
 
-              {/* Partner Portal Link (Visible on wide screens) */}
-              {width >= 1140 && (
-                <TouchableOpacity
-                  onPress={() => router.push('/(partner)')}
-                  style={styles.partnerNavBtn}
-                  activeOpacity={0.8}
-                >
-                  <Ionicons name="briefcase-outline" size={15} color="#059669" />
-                  <Text style={styles.partnerNavBtnText}>Partner App</Text>
-                </TouchableOpacity>
-              )}
-
               {/* Cart Button */}
               <TouchableOpacity
                 onPress={() => router.push('/(customer)/checkout')}
@@ -442,12 +474,13 @@ export default function CustomerLayout() {
                 )}
               </TouchableOpacity>
 
-              {/* Profile Button with Dropdown containing My Bookings */}
+              {/* Profile Button with Dropdown containing My Bookings & Edit Profile */}
               <View ref={profileDropdownRef} style={styles.profileWrapper}>
                 <TouchableOpacity
                   onPress={() => {
                     setShowProfileMenu(!showProfileMenu);
                     if (showLocationPicker) setShowLocationPicker(false);
+                    if (showServicesMenu) setShowServicesMenu(false);
                   }}
                   style={[
                     styles.circleIconButton,
@@ -455,11 +488,18 @@ export default function CustomerLayout() {
                   ]}
                   activeOpacity={0.8}
                 >
-                  <Ionicons
-                    name={showProfileMenu ? 'person' : 'person-outline'}
-                    size={19}
-                    color={showProfileMenu ? '#991B1B' : '#111827'}
-                  />
+                  {customerProfile.avatarUrl ? (
+                    <Image
+                      source={{ uri: customerProfile.avatarUrl }}
+                      style={styles.circleAvatarImg}
+                    />
+                  ) : (
+                    <Ionicons
+                      name={showProfileMenu ? 'person' : 'person-outline'}
+                      size={19}
+                      color={showProfileMenu ? '#991B1B' : '#111827'}
+                    />
+                  )}
                   {activeOrdersCount > 0 && (
                     <View style={styles.profileNoticeDot}>
                       <Text style={styles.profileNoticeDotText}>{activeOrdersCount}</Text>
@@ -470,22 +510,63 @@ export default function CustomerLayout() {
                 {/* Profile Dropdown Menu */}
                 {showProfileMenu && (
                   <View style={styles.profileDropdownMenu}>
-                    {/* User Info Header */}
+                    {/* User Info Header with Quick Edit */}
                     <View style={styles.profileDropdownHeader}>
-                      <View style={styles.profileAvatarCircle}>
-                        <Ionicons name="person" size={18} color="#991B1B" />
-                      </View>
-                      <View style={{ flex: 1 }}>
-                        <Text style={styles.profileNameText}>Saif (Customer)</Text>
+                      <TouchableOpacity
+                        onPress={handleOpenEditProfile}
+                        style={styles.profileAvatarCircle}
+                        activeOpacity={0.8}
+                      >
+                        {customerProfile.avatarUrl ? (
+                          <Image
+                            source={{ uri: customerProfile.avatarUrl }}
+                            style={styles.profileAvatarImg}
+                          />
+                        ) : (
+                          <Ionicons name="person" size={20} color="#991B1B" />
+                        )}
+                        <View style={styles.avatarEditPencilBadge}>
+                          <Ionicons name="pencil" size={9} color="#FFFFFF" />
+                        </View>
+                      </TouchableOpacity>
+
+                      <View style={{ flex: 1, marginLeft: 10 }}>
+                        <Text style={styles.profileNameText} numberOfLines={1}>
+                          {customerProfile.name}
+                        </Text>
                         <Text style={styles.profileLocationText} numberOfLines={1}>
-                          {selectedLocation.split(',')[0]}
+                          {customerProfile.phone}
                         </Text>
                       </View>
+
+                      <TouchableOpacity
+                        onPress={handleOpenEditProfile}
+                        style={styles.profileHeaderEditBtn}
+                        activeOpacity={0.7}
+                      >
+                        <Ionicons name="pencil" size={11} color="#2563EB" />
+                        <Text style={styles.profileHeaderEditText}>Edit</Text>
+                      </TouchableOpacity>
                     </View>
 
                     <View style={styles.profileMenuDivider} />
 
-                    {/* Primary Item: My Bookings */}
+                    {/* Item 1: Edit Profile */}
+                    <TouchableOpacity
+                      style={styles.profileMenuItem}
+                      onPress={handleOpenEditProfile}
+                      activeOpacity={0.7}
+                    >
+                      <View style={styles.profileMenuItemLeft}>
+                        <View style={[styles.profileMenuIconWrap, { backgroundColor: 'rgba(37, 99, 235, 0.1)' }]}>
+                          <Ionicons name="person-circle-outline" size={18} color="#2563EB" />
+                        </View>
+                        <Text style={styles.profileMenuItemTextBold}>Edit Profile</Text>
+                      </View>
+                      <Ionicons name="chevron-forward" size={14} color="#94A3B8" />
+                    </TouchableOpacity>
+
+                    {/* Item 2: My Bookings */}
                     <TouchableOpacity
                       style={styles.profileMenuItem}
                       onPress={() => {
@@ -498,7 +579,7 @@ export default function CustomerLayout() {
                         <View style={styles.profileMenuIconWrap}>
                           <Ionicons name="calendar" size={17} color="#991B1B" />
                         </View>
-                        <Text style={styles.profileMenuItemTextBold}>My Bookings</Text>
+                        <Text style={styles.profileMenuItemText}>My Bookings</Text>
                       </View>
                       {activeOrdersCount > 0 ? (
                         <View style={styles.profileOrdersBadge}>
@@ -658,10 +739,17 @@ export default function CustomerLayout() {
             </TouchableOpacity>
 
             <TouchableOpacity
-              onPress={() => router.push('/(customer)/bookings')}
+              onPress={handleOpenEditProfile}
               style={styles.mobileCircleBtn}
             >
-              <Ionicons name="person-outline" size={18} color="#111827" />
+              {customerProfile.avatarUrl ? (
+                <Image
+                  source={{ uri: customerProfile.avatarUrl }}
+                  style={styles.mobileAvatarImg}
+                />
+              ) : (
+                <Ionicons name="person-outline" size={18} color="#111827" />
+              )}
             </TouchableOpacity>
           </View>
         </View>
@@ -674,6 +762,192 @@ export default function CustomerLayout() {
 
       {/* Floating Quick Help & Diagnostic Capsule (Globally visible on Home, Product Details & Categories) */}
       <FloatingHelpCapsule />
+
+      {/* EDIT PROFILE MODAL */}
+      <Modal
+        visible={showEditProfileModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowEditProfileModal(false)}
+      >
+        <View style={styles.modalBackdrop}>
+          <Pressable
+            style={styles.modalDismissOverlay}
+            onPress={() => setShowEditProfileModal(false)}
+            accessibilityLabel="Close Edit Profile modal"
+          />
+
+          <View style={styles.editProfileCard}>
+            {/* Header */}
+            <View style={styles.editProfileHeader}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.editProfileTitle}>Edit Profile</Text>
+                <Text style={styles.editProfileSubtitle}>
+                  Change your display name, contact, and avatar photo
+                </Text>
+              </View>
+              <TouchableOpacity
+                onPress={() => setShowEditProfileModal(false)}
+                style={styles.editProfileCloseBtn}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="close" size={20} color="#64748B" />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView
+              style={styles.editProfileBody}
+              contentContainerStyle={{ padding: 20 }}
+              showsVerticalScrollIndicator={false}
+            >
+              {/* Avatar Section */}
+              <View style={styles.avatarSection}>
+                <View style={styles.avatarPreviewWrap}>
+                  {editAvatar ? (
+                    <Image
+                      source={{ uri: editAvatar }}
+                      style={styles.avatarPreviewImg}
+                    />
+                  ) : (
+                    <View style={styles.avatarPlaceholderWrap}>
+                      <Ionicons name="person" size={38} color="#94A3B8" />
+                    </View>
+                  )}
+                  <View style={styles.avatarPreviewBadge}>
+                    <Ionicons name="camera" size={13} color="#FFFFFF" />
+                  </View>
+                </View>
+
+                <Text style={styles.avatarChooseTitle}>Choose an Avatar Photo</Text>
+                <Text style={styles.avatarChooseSub}>
+                  Select a stylish preset or paste a custom image link
+                </Text>
+
+                {/* Preset Avatars Row */}
+                <View style={styles.presetAvatarsRow}>
+                  {AVATAR_PRESETS.map((preset) => {
+                    const isSelected = editAvatar === preset.url;
+                    return (
+                      <TouchableOpacity
+                        key={preset.id}
+                        onPress={() => setEditAvatar(preset.url)}
+                        style={[
+                          styles.presetAvatarBtn,
+                          isSelected && styles.presetAvatarBtnSelected,
+                        ]}
+                        activeOpacity={0.8}
+                      >
+                        <Image
+                          source={{ uri: preset.url }}
+                          style={styles.presetAvatarImg}
+                        />
+                        {isSelected && (
+                          <View style={styles.presetCheckBadge}>
+                            <Ionicons name="checkmark" size={10} color="#FFFFFF" />
+                          </View>
+                        )}
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+
+                {/* Custom Image URL Input */}
+                <View style={styles.customUrlInputWrap}>
+                  <Ionicons name="link-outline" size={15} color="#94A3B8" />
+                  <TextInput
+                    value={editAvatar}
+                    onChangeText={setEditAvatar}
+                    placeholder="Or enter custom image URL (https://...)"
+                    placeholderTextColor="#94A3B8"
+                    style={styles.customUrlInput}
+                  />
+                  {editAvatar ? (
+                    <TouchableOpacity onPress={() => setEditAvatar('')} style={{ padding: 2 }}>
+                      <Ionicons name="close-circle" size={15} color="#94A3B8" />
+                    </TouchableOpacity>
+                  ) : null}
+                </View>
+              </View>
+
+              {/* Form Input: Full Name */}
+              <View style={styles.formGroup}>
+                <Text style={styles.formLabel}>Full Name</Text>
+                <View style={styles.formInputWrap}>
+                  <Ionicons name="person-outline" size={16} color="#64748B" />
+                  <TextInput
+                    value={editName}
+                    onChangeText={setEditName}
+                    placeholder="e.g. Saif Ali"
+                    placeholderTextColor="#94A3B8"
+                    style={styles.formInput}
+                  />
+                </View>
+              </View>
+
+              {/* Form Input: Mobile Number */}
+              <View style={styles.formGroup}>
+                <Text style={styles.formLabel}>Mobile Number</Text>
+                <View style={styles.formInputWrap}>
+                  <Ionicons name="call-outline" size={16} color="#64748B" />
+                  <TextInput
+                    value={editPhone}
+                    onChangeText={setEditPhone}
+                    placeholder="e.g. +91 98765 43210"
+                    placeholderTextColor="#94A3B8"
+                    keyboardType="phone-pad"
+                    style={styles.formInput}
+                  />
+                </View>
+              </View>
+
+              {/* Form Input: Email Address */}
+              <View style={styles.formGroup}>
+                <Text style={styles.formLabel}>Email Address</Text>
+                <View style={styles.formInputWrap}>
+                  <Ionicons name="mail-outline" size={16} color="#64748B" />
+                  <TextInput
+                    value={editEmail}
+                    onChangeText={setEditEmail}
+                    placeholder="e.g. saif@example.com"
+                    placeholderTextColor="#94A3B8"
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    style={styles.formInput}
+                  />
+                </View>
+              </View>
+            </ScrollView>
+
+            {/* Actions */}
+            <View style={styles.editProfileActions}>
+              <TouchableOpacity
+                onPress={() => setShowEditProfileModal(false)}
+                style={styles.cancelBtn}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.cancelBtnText}>Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => {
+                  updateCustomerProfile({
+                    name: editName.trim() || customerProfile.name,
+                    phone: editPhone.trim() || customerProfile.phone,
+                    email: editEmail.trim() || customerProfile.email,
+                    avatarUrl: editAvatar.trim(),
+                  });
+                  setShowEditProfileModal(false);
+                }}
+                style={styles.saveProfileBtn}
+                activeOpacity={0.85}
+              >
+                <Ionicons name="checkmark-circle" size={16} color="#FFFFFF" />
+                <Text style={styles.saveProfileBtnText}>Save Changes</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
 
       {/* MOBILE BOTTOM TABS */}
       {!isDesktop && (
@@ -931,44 +1205,64 @@ const styles = StyleSheet.create({
   servicesMenuGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    padding: 10,
+    padding: 12,
     gap: 8,
   },
   servicesMenuItem: {
     width: '48.5%',
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    paddingVertical: 9,
-    paddingHorizontal: 10,
-    borderRadius: 10,
+    gap: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 12,
     backgroundColor: '#FFFFFF',
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: 'transparent',
     cursor: 'pointer',
-    transition: 'all 0.18s ease',
+    transition: 'all 0.22s cubic-bezier(0.16, 1, 0.3, 1)',
   } as any,
   servicesMenuItemHovered: {
     backgroundColor: '#F8FAFC',
-    borderColor: '#E2E8F0',
-  },
+    borderColor: '#0F172A',
+    transform: [{ translateX: 4 }],
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 3,
+  } as any,
   servicesMenuIconWrap: {
-    width: 36,
-    height: 36,
-    borderRadius: 9,
+    width: 38,
+    height: 38,
+    borderRadius: 10,
+    backgroundColor: '#F1F5F9',
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
     alignItems: 'center',
     justifyContent: 'center',
-  },
+    transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+  } as any,
+  servicesMenuIconWrapHovered: {
+    backgroundColor: '#0F172A',
+    borderColor: '#0F172A',
+    transform: [{ scale: 1.05 }],
+  } as any,
   servicesMenuItemInfo: {
     flex: 1,
   },
   servicesMenuItemName: {
-    fontSize: 12.5,
+    fontSize: 13,
     fontWeight: '700',
     color: '#0F172A',
+    transition: 'color 0.2s ease',
+  } as any,
+  servicesMenuItemNameHovered: {
+    color: '#000000',
+    fontWeight: '800',
   },
   servicesMenuItemCount: {
-    fontSize: 10.5,
+    fontSize: 11,
     color: '#64748B',
     fontWeight: '500',
     marginTop: 2,
@@ -1240,6 +1534,52 @@ const styles = StyleSheet.create({
     backgroundColor: '#FEF2F2',
     alignItems: 'center',
     justifyContent: 'center',
+    position: 'relative',
+  },
+  circleAvatarImg: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+  },
+  profileAvatarImg: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+  },
+  avatarEditPencilBadge: {
+    position: 'absolute',
+    bottom: -2,
+    right: -2,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: '#2563EB',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    borderColor: '#FFFFFF',
+  },
+  profileHeaderEditBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#EFF6FF',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#BFDBFE',
+    cursor: 'pointer',
+  } as any,
+  profileHeaderEditText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#2563EB',
+  },
+  mobileAvatarImg: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
   },
   profileNameText: {
     fontSize: 14,
@@ -1468,5 +1808,253 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 9,
     fontWeight: '800',
+  },
+
+  /* Edit Profile Modal Styles */
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(15, 23, 42, 0.65)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 16,
+    ...(Platform.OS === 'web' ? { backdropFilter: 'blur(8px)' } : {}),
+  } as any,
+  modalDismissOverlay: {
+    position: (Platform.OS === 'web' ? 'fixed' : 'absolute') as any,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  editProfileCard: {
+    width: '100%',
+    maxWidth: 480,
+    maxHeight: '90%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 16 },
+    shadowOpacity: 0.25,
+    shadowRadius: 32,
+    elevation: 16,
+    overflow: 'hidden',
+    zIndex: 10,
+  },
+  editProfileHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+    backgroundColor: '#F8FAFC',
+  },
+  editProfileTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  editProfileSubtitle: {
+    fontSize: 12,
+    color: '#64748B',
+    fontWeight: '500',
+    marginTop: 2,
+  },
+  editProfileCloseBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#E2E8F0',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
+  } as any,
+  editProfileBody: {
+    maxHeight: 460,
+  },
+  avatarSection: {
+    alignItems: 'center',
+    marginBottom: 20,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+  },
+  avatarPreviewWrap: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    position: 'relative',
+    marginBottom: 10,
+  },
+  avatarPreviewImg: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    borderWidth: 2.5,
+    borderColor: '#2563EB',
+  },
+  avatarPlaceholderWrap: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#F1F5F9',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#E2E8F0',
+  },
+  avatarPreviewBadge: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: '#2563EB',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+  },
+  avatarChooseTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#0F172A',
+  },
+  avatarChooseSub: {
+    fontSize: 11,
+    color: '#64748B',
+    fontWeight: '500',
+    marginTop: 2,
+  },
+  presetAvatarsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    marginVertical: 12,
+    flexWrap: 'wrap',
+  },
+  presetAvatarBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    borderWidth: 2,
+    borderColor: 'transparent',
+    position: 'relative',
+    cursor: 'pointer',
+  } as any,
+  presetAvatarBtnSelected: {
+    borderColor: '#2563EB',
+    transform: [{ scale: 1.08 }],
+  } as any,
+  presetAvatarImg: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+  },
+  presetCheckBadge: {
+    position: 'absolute',
+    top: -2,
+    right: -2,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: '#2563EB',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    borderColor: '#FFFFFF',
+  },
+  customUrlInputWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    height: 38,
+    width: '100%',
+    maxWidth: 380,
+  },
+  customUrlInput: {
+    flex: 1,
+    fontSize: 12,
+    color: '#0F172A',
+    padding: 0,
+    outlineStyle: 'none' as any,
+  },
+  formGroup: {
+    marginBottom: 14,
+  },
+  formLabel: {
+    fontSize: 12.5,
+    fontWeight: '700',
+    color: '#334155',
+    marginBottom: 6,
+  },
+  formInputWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 9,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    height: 42,
+  },
+  formInput: {
+    flex: 1,
+    fontSize: 13,
+    color: '#0F172A',
+    fontWeight: '500',
+    padding: 0,
+    outlineStyle: 'none' as any,
+  },
+  editProfileActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    gap: 10,
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    backgroundColor: '#F8FAFC',
+    borderTopWidth: 1,
+    borderTopColor: '#F1F5F9',
+  },
+  cancelBtn: {
+    paddingHorizontal: 16,
+    paddingVertical: 9,
+    borderRadius: 9,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    cursor: 'pointer',
+  } as any,
+  cancelBtnText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#64748B',
+  },
+  saveProfileBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 18,
+    paddingVertical: 9,
+    borderRadius: 9,
+    backgroundColor: '#0F172A',
+    cursor: 'pointer',
+  } as any,
+  saveProfileBtnText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
 });

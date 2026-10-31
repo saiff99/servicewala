@@ -22,7 +22,25 @@ export interface EcosystemNotification {
   orderId?: string;
 }
 
+export interface CustomerProfile {
+  name: string;
+  phone: string;
+  email: string;
+  avatarUrl: string;
+}
+
+const DEFAULT_CUSTOMER_PROFILE: CustomerProfile = {
+  name: 'Saif Ali',
+  phone: '+91 98765 43210',
+  email: 'saif.ali@servicewala.com',
+  avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&q=80',
+};
+
 interface EcosystemState {
+  // Customer Profile
+  customerProfile: CustomerProfile;
+  updateCustomerProfile: (updates: Partial<CustomerProfile>) => void;
+
   // Navigation & Portal Management
   activePortal: PortalType;
   currentPartnerId: string;
@@ -88,6 +106,12 @@ interface EcosystemState {
 }
 
 export const useEcosystemStore = create<EcosystemState>((set, get) => ({
+  customerProfile: DEFAULT_CUSTOMER_PROFILE,
+  updateCustomerProfile: (updates) =>
+    set((state) => ({
+      customerProfile: { ...state.customerProfile, ...updates },
+    })),
+
   activePortal: 'customer',
   currentPartnerId: 'tech-101', // Default partner: Rajesh Verma
   setActivePortal: (portal) => set({ activePortal: portal }),
@@ -593,6 +617,7 @@ export const useEcosystemStore = create<EcosystemState>((set, get) => ({
 
   resetEcosystem: () => {
     set({
+      customerProfile: DEFAULT_CUSTOMER_PROFILE,
       categories: INITIAL_CATEGORIES,
       services: INITIAL_SERVICES,
       technicians: INITIAL_TECHNICIANS,

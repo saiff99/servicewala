@@ -82,7 +82,9 @@ export default function FloatingHelpCapsule({ onScrollToServices }: FloatingHelp
   const pathname = usePathname();
   const { cart, addToCart } = useEcosystemStore();
 
+  const totalCartCount = Object.values(cart).reduce((a, b) => a + b, 0);
   const isProductPage = Boolean(pathname && pathname.includes('/service'));
+  const hasFloatingCart = totalCartCount > 0 && !(pathname && pathname.includes('/checkout'));
 
   const scrollViewRef = useRef<any>(null);
   const phoneInputRef = useRef<any>(null);
@@ -160,6 +162,8 @@ export default function FloatingHelpCapsule({ onScrollToServices }: FloatingHelp
           !isDesktop &&
             (isPhoneFocused
               ? styles.floatingHelpContainerKeyboardMobile
+              : hasFloatingCart
+              ? styles.floatingHelpContainerWithCartMobile
               : isProductPage
               ? styles.floatingHelpContainerProductMobile
               : styles.floatingHelpContainerMobile),
@@ -471,7 +475,11 @@ const styles = StyleSheet.create({
     transition: 'bottom 0.28s cubic-bezier(0.16, 1, 0.3, 1)',
   } as any,
   floatingHelpContainerMobile: {
-    bottom: 84, // Clears mobile bottom navigation bar on home/catalog
+    bottom: 74, // Clears mobile bottom navigation bar on home/catalog
+    right: 16,
+  },
+  floatingHelpContainerWithCartMobile: {
+    bottom: 136, // Sits cleanly above the sticky View Cart & Checkout button on mobile
     right: 16,
   },
   floatingHelpContainerProductMobile: {

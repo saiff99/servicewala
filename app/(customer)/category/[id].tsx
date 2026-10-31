@@ -17,6 +17,29 @@ import { useEcosystemStore } from '../../../src/store/useEcosystemStore';
 import { ServiceItem } from '../../../src/data/mockEcosystemData';
 import { THEME, currencyFormatter } from '../../../src/constants/theme';
 
+function getCategoryIcon(iconName: string): any {
+  switch (iconName) {
+    case 'Snowflake':
+      return 'snow-outline';
+    case 'Sparkles':
+      return 'sparkles-outline';
+    case 'Wrench':
+      return 'construct-outline';
+    case 'Flower2':
+      return 'flower-outline';
+    case 'Scissors':
+      return 'cut-outline';
+    case 'Paintbrush':
+      return 'color-palette-outline';
+    case 'Laptop':
+      return 'laptop-outline';
+    case 'Print':
+      return 'print-outline';
+    default:
+      return 'apps-outline';
+  }
+}
+
 export default function CategoryScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { width } = useWindowDimensions();
@@ -50,8 +73,12 @@ export default function CategoryScreen() {
       {/* CATEGORY HEADER BANNER */}
       <View style={[styles.headerBanner, { borderLeftColor: currentCategory.tagColor }]}>
         <View style={styles.headerBannerInner}>
-          <TouchableOpacity onPress={() => router.push('/(customer)')} style={styles.backBtn}>
-            <Ionicons name="arrow-back" size={20} color="#0F172A" />
+          <TouchableOpacity
+            onPress={() => router.push('/(customer)')}
+            style={styles.backBtn}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="arrow-back" size={15} color="#475569" />
             <Text style={styles.backBtnText}>All Categories</Text>
           </TouchableOpacity>
           <View style={styles.bannerTextWrap}>
@@ -66,6 +93,7 @@ export default function CategoryScreen() {
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
+          style={styles.mobileCategoryScrollWrap}
           contentContainerStyle={styles.mobileCategoryScroll}
         >
           {categories.map((cat) => {
@@ -76,12 +104,33 @@ export default function CategoryScreen() {
                 onPress={() => router.push(`/(customer)/category/${cat.id}`)}
                 style={[
                   styles.mobileCatPill,
-                  isActive && { backgroundColor: cat.tagColor, borderColor: cat.tagColor },
+                  isActive && styles.mobileCatPillActive,
                 ]}
+                activeOpacity={0.7}
               >
+                <Ionicons
+                  name={getCategoryIcon(cat.icon)}
+                  size={14}
+                  color={isActive ? '#FFFFFF' : '#0F172A'}
+                />
                 <Text style={[styles.mobileCatPillText, isActive && styles.mobileCatPillTextActive]}>
                   {cat.name}
                 </Text>
+                <View
+                  style={[
+                    styles.mobileCatBadge,
+                    isActive && styles.mobileCatBadgeActive,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.mobileCatBadgeText,
+                      isActive && styles.mobileCatBadgeTextActive,
+                    ]}
+                  >
+                    {cat.serviceCount}
+                  </Text>
+                </View>
               </TouchableOpacity>
             );
           })}
@@ -275,24 +324,28 @@ export default function CategoryScreen() {
             <View style={styles.stickyCartInfo}>
               <View style={styles.stickyCountWrap}>
                 <View style={styles.stickyCartIconBadge}>
-                  <Ionicons name="bag-check" size={15} color="#10B981" />
+                  <Ionicons name="bag-check" size={14} color="#10B981" />
                 </View>
-                <Text style={styles.stickyCountText}>
-                  {totalCartCount} {totalCartCount === 1 ? 'item' : 'items'} in cart
-                </Text>
-                <Text style={styles.stickyDotSep}>•</Text>
                 <Text style={styles.stickyTotalAmount}>{currencyFormatter(cartSubtotal)}</Text>
+                <Text style={styles.stickyDotSep}>•</Text>
+                <Text style={styles.stickyCountText}>
+                  {totalCartCount} {totalCartCount === 1 ? 'item' : 'items'}
+                </Text>
               </View>
-              <Text style={styles.stickySubText}>Extra ₹50 off applies on online checkout</Text>
+              <Text style={styles.stickySubText} numberOfLines={1}>
+                {isDesktop ? 'Extra ₹50 off applies on online checkout' : 'Extra ₹50 off applied'}
+              </Text>
             </View>
 
             <TouchableOpacity
               onPress={() => router.push('/(customer)/checkout')}
-              style={styles.stickyProceedBtn}
+              style={[styles.stickyProceedBtn, !isDesktop && styles.stickyProceedBtnMobile]}
               activeOpacity={0.88}
             >
-              <Text style={styles.stickyProceedText}>View Cart & Checkout</Text>
-              <Ionicons name="arrow-forward" size={15} color="#FFFFFF" />
+              <Text style={styles.stickyProceedText}>
+                {isDesktop ? 'View Cart & Checkout' : 'View Cart'}
+              </Text>
+              <Ionicons name="arrow-forward" size={14} color="#FFFFFF" />
             </TouchableOpacity>
           </View>
         </View>
@@ -411,9 +464,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
     borderBottomColor: '#E2E8F0',
-    borderLeftWidth: 6,
-    paddingVertical: 18,
-    paddingHorizontal: 24,
+    borderLeftWidth: 4,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
   },
   headerBannerInner: {
     maxWidth: 1200,
@@ -423,50 +476,90 @@ const styles = StyleSheet.create({
   backBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    marginBottom: 8,
+    gap: 4,
+    marginBottom: 3,
+    alignSelf: 'flex-start',
+    cursor: 'pointer',
   },
   backBtnText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#475569',
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#64748B',
   },
   bannerTextWrap: {},
   categoryTitle: {
-    fontSize: 26,
-    fontWeight: '900',
+    fontSize: 20,
+    fontWeight: '800',
     color: '#0F172A',
-    letterSpacing: -0.5,
+    letterSpacing: -0.3,
+    lineHeight: 24,
   },
   categorySubtitle: {
-    fontSize: 14,
+    fontSize: 12.5,
     color: '#64748B',
-    marginTop: 4,
+    marginTop: 2,
+    lineHeight: 16,
   },
-  mobileCategoryScroll: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    gap: 8,
+  mobileCategoryScrollWrap: {
+    flexGrow: 0,
+    flexShrink: 0,
     backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
     borderBottomColor: '#E2E8F0',
   },
+  mobileCategoryScroll: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    gap: 8,
+  },
   mobileCatPill: {
-    paddingHorizontal: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     paddingVertical: 7,
+    paddingHorizontal: 13,
     borderRadius: 20,
-    backgroundColor: '#F1F5F9',
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#E2E8F0',
+    cursor: 'pointer',
+  },
+  mobileCatPillActive: {
+    backgroundColor: '#0F172A',
+    borderColor: '#0F172A',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 3,
+    elevation: 2,
   },
   mobileCatPillText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#475569',
+    color: '#0F172A',
   },
   mobileCatPillTextActive: {
     color: '#FFFFFF',
     fontWeight: '800',
+  },
+  mobileCatBadge: {
+    backgroundColor: '#F1F5F9',
+    borderRadius: 10,
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+  },
+  mobileCatBadgeActive: {
+    backgroundColor: 'rgba(255, 255, 255, 0.22)',
+  },
+  mobileCatBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#475569',
+  },
+  mobileCatBadgeTextActive: {
+    color: '#FFFFFF',
   },
   splitPaneContainer: {
     flex: 1,
@@ -762,8 +855,8 @@ const styles = StyleSheet.create({
     pointerEvents: 'box-none' as any,
   },
   stickyCartBarWrapperMobile: {
-    bottom: 74, // Sits comfortably above the mobile bottom tab bar
-    paddingHorizontal: 16,
+    bottom: 68, // Sits comfortably above the mobile bottom tab bar (58px)
+    paddingHorizontal: 12,
   },
   stickyCartCapsule: {
     backgroundColor: 'rgba(15, 23, 42, 0.96)',
@@ -793,10 +886,10 @@ const styles = StyleSheet.create({
     pointerEvents: 'auto' as any,
   },
   stickyCartCapsuleMobile: {
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 20,
-    gap: 12,
+    paddingVertical: 9,
+    paddingHorizontal: 14,
+    borderRadius: 18,
+    gap: 10,
   },
   stickyCartInfo: {
     flex: 1,
@@ -804,34 +897,34 @@ const styles = StyleSheet.create({
   stickyCountWrap: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 6,
   },
   stickyCartIconBadge: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
     backgroundColor: 'rgba(16, 185, 129, 0.18)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   stickyDotSep: {
     color: '#64748B',
-    fontSize: 14,
+    fontSize: 12,
   },
   stickyCountText: {
     color: '#94A3B8',
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
   },
   stickyTotalAmount: {
     color: '#FFFFFF',
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: '900',
     letterSpacing: -0.3,
   },
   stickySubText: {
     color: '#34D399',
-    fontSize: 11,
+    fontSize: 10.5,
     fontWeight: '700',
     marginTop: 2,
     letterSpacing: 0.2,
@@ -849,12 +942,19 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 10,
     elevation: 4,
+    cursor: 'pointer',
+  },
+  stickyProceedBtnMobile: {
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+    borderRadius: 12,
+    gap: 6,
   },
   stickyProceedText: {
     color: '#FFFFFF',
-    fontSize: 13.5,
+    fontSize: 13,
     fontWeight: '800',
-    letterSpacing: 0.3,
+    letterSpacing: 0.2,
   },
   modalBackdrop: {
     flex: 1,
