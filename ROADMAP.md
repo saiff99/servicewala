@@ -12,7 +12,10 @@ This document outlines the strategic development phases for the **Servicewala Mu
   - [x] **Admin Operations Center:** Real-time revenue & GMV KPIs, live order dispatch board, dynamic catalog manager, and technician KYC approval.
 - [x] **High-Conversion Trust & Quality Engines (Customer Home):**
   - [x] **22+ Multi-Brand Infinite Marquee:** Continuous CSS-animated loop displaying genuine OEM authorized repair support for Samsung, Apple, LG, Voltas, HP, Dell, etc.
-  - [x] **₹10,000 Home Protection Promise Shield:** Zero-liability property damage coverage, 48-hour claim processing, and 4 trust pillars.
+  - [x] **The Servicewala Promise ("Why Choose Servicewala?"):** Legally compliant 4-pillar trust model (Verified Experts, Upfront Fixed Pricing, 30-Day Guarantee, Genuine OEM Parts).
+  - [x] **Hyperlocal Geolocation & 2-Pathway Location Selector:** 1-tap auto GPS / Wi-Fi detection (`Use current location`) + live area autocomplete with strict India filtering (`country: IN`) and 4G cellular gateway safeguard.
+  - [x] **Uber & Swiggy-Grade Micro-Landmark Autocomplete:** Instant local cache matching + proximity distance tags (`22 km`, `23 km`) and custom address addition (`Deliver to "..."`).
+  - [x] **Mobile-First Adaptive Header & Bottom Navigation:** Compact `SW` square badge, quick location pill, dedicated full-width search bar, and optimized bottom navigation tabs.
   - [x] **Floating Quick Help & Diagnostic Capsule:** Sticky flyout capsule offering 1-tap issue diagnostics, immediate cost estimates, WhatsApp chat, and 2-min callback requests.
   - [x] **Enterprise Mega Footer & FAQ:** Comprehensive interactive accordion and multi-column luxury footer with trust ribbon and integrated mobile app badges.
 - [x] **Modular Component Architecture:** Decomposed customer home into 14 self-contained modules in `src/components/home/` with a clean ~115-line master orchestrator.

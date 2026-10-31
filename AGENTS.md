@@ -71,9 +71,11 @@ All three portals communicate through `useEcosystemStore.ts`. **Do not create se
 - `Technician`: Service provider profile (`id`, `name`, `status`, `kycStatus`, `commissionRate`, `walletBalance`).
 - `BookingOrder`: Complete booking lifecycle (`id`, `bookingNumber`, `customerName`, `status`, `startOtp`, `endOtp`, `paymentStatus`).
 - `SpotlightOffer`: Discount coupons (`code`, `discount`, `targetCategory`).
+- `LocationState`: Active service locality (`selectedLocation: string`, default: `'Budge Budge'`, synchronized with `localStorage`).
 
 ### Essential Store Actions:
 - **Cart & Checkout:** `addToCart(serviceId)`, `removeFromCart(serviceId)`, `clearCart()`, `applyPromo(code)`, `createBooking(details)`.
+- **Location:** `setSelectedLocation(location)` (persists reactively across portals and sessions).
 - **Technician Actions:** `acceptJob(orderId, techId)`, `verifyStartOtp(orderId, otp)`, `verifyEndOtp(orderId, otp)`, `toggleTechnicianStatus(techId, status)`.
 - **Admin Actions:** `updateOrderStatus(orderId, status)`, `assignTechnicianToOrder(orderId, techId)`, `updateService(service)`, `addService(service)`, `updateTechnicianKyc(techId, status)`.
 - **Notifications:** `showNotification(title, message, type)`.
@@ -90,10 +92,16 @@ All three portals communicate through `useEcosystemStore.ts`. **Do not create se
   - Slate Gray (Borders & Icons): `#E2E8F0` / `#475569`
   - Clean Background: `#FFFFFF` (surfaces) and `#F8FAFC` (app background)
 - **Rule on Styling:** Always use React Native `StyleSheet.create`. Do **NOT** use Tailwind CSS classes or raw arbitrary utility strings.
-- **Responsive Layout:**
+- **Responsive Layout & Mobile UX:**
   - `useWindowDimensions()` hook
   - `isDesktop = width >= THEME.breakpoints.desktopMin` (`768px`)
   - Mobile-first adaptive layout with desktop container max-width `1200px` to `1280px`.
+  - Mobile header features compact `SW` brand badge, location pill, profile avatar, and a dedicated full-width search bar.
+  - Mobile tabs: `Home`, `Categories`, `Cart`, `Bookings`.
+- **Hyperlocal Geolocation Conventions:**
+  - 2-Pathway model: 1-tap GPS auto-detect + manual area autocomplete. No static long city lists.
+  - Strict India-only country filtering (`country: IN`).
+  - Mobile 4G cellular gateway safeguard (prevents CGNAT IP artifacts from shifting users away from local areas).
 
 ---
 

@@ -56,6 +56,7 @@ All portals bind to a centralized reactive store built with **Zustand** (`src/st
 | `technicians` | Registered partners, status, ratings, KYC | Partner Profile & Admin Fleet | Admin Dispatch & Job Radar |
 | `orders` | Complete ledger of booking requests | Customer Checkout & Partner OTP | All 3 Portals simultaneously |
 | `cart` | Current customer shopping cart | Customer Marketplace | Customer Checkout |
+| `selectedLocation` | Active doorstep service locality (e.g. 'Budge Budge') | Customer GPS / Area Search | All Portals & Marketplace |
 | `activePartnerId` | Currently active simulated technician | Portal Switcher Bar | Partner Job Screen |
 | `notification` | Floating real-time toast alert | All store actions | Global Notification Banner |
 
@@ -112,7 +113,50 @@ This calculation automatically updates:
 
 ---
 
-## 5. Screen & Routing Directory Map
+## 5. Hyper-Local Geolocation & Autocomplete Architecture
+
+Doorstep home services require pin-point geographic precision. Servicewala adopts a **2-Pathway Location Architecture** (matching Urban Company, Swiggy, and Uber standards):
+
+```
+                       [Location Selector Triggered]
+                                     |
+               +---------------------+---------------------+
+               |                                           |
+               v                                           v
+    [Pathway 1: 1-Tap GPS Auto-Detect]          [Pathway 2: Live Area Search]
+               |                                           |
+    Browser / Native Geolocation                0ms Local Cache Match (`POPULAR_AREAS`)
+               |                                           +
+     Hardware Coordinates (lat, lon)            Debounced Photon/OSM Geocoder
+               |                                           |
+    Locality-First Reverse Geocoding            Strict India-Only Filter (`country: IN`)
+    (BigDataCloud -> OSM Nominatim)                        |
+               |                                Proximity Ranking & Distance Tag (`22 km`)
+    Cellular CGNAT Safeguard                               |
+    (Drops remote 4G gateway IPs)               Render 2-Line Cards with Custom Pin Option
+               \                                           /
+                +--------------------+--------------------+
+                                     |
+                                     v
+                        Store in `selectedLocation`
+                       (Zustand + `localStorage`)
+```
+
+### Key Technical Pillars:
+1. **Locality-First Reverse Geocoding (`extractBestLocality`):**
+   Prioritizes micro-local entities (`town`, `suburb`, `locality`, `village`) before broad administrative names (e.g., identifies "Budge Budge" instead of generic "Kolkata").
+2. **Strict India-Only Country Filter:**
+   Hard-coded countrycode verification (`p.countrycode === 'in'` or `p.country === 'india'`) strictly eliminates international false-positives (such as Nepal, Saudi Arabia, USA, or China).
+3. **Cellular Carrier-Grade NAT (CGNAT) Safeguard:**
+   Mobile telecom operators (Jio, Airtel) route cellular 4G data through central gateway servers (such as Barrackpore or Kalyani). If geolocation falls back to IP-based detection while on cellular data without GPS lock, the system detects the gateway artifact and preserves the user's verified local area rather than misrouting them 40 km away.
+4. **Proximity-Biased Distance Tagging:**
+   Each search suggestion computes Euclidean/Haversine distance from the user's active coordinates and presents an Uber-style distance badge (e.g., `22 km`, `23 km`).
+5. **Universal Tap-Outside Backdrop:**
+   Web and native backdrop layer (`dropdownBackdropOverlay`) ensuring 1-tap outside dismissal on mobile touch screens.
+
+---
+
+## 6. Screen & Routing Directory Map
 
 ### Customer Portal (`app/(customer)`)
 - `_layout.tsx`: Desktop navbar with Urban Company style header + Mobile bottom navigation.
@@ -129,8 +173,7 @@ This calculation automatically updates:
 - `CategoriesGridSection.tsx`: 8-category primary grid with rating stats and service counts.
 - `SpotlightOffersStrip.tsx`: Horizontal seasonal deal cards with one-tap promo application.
 - `PopularServicesSection.tsx`: Search and category-filtered services grid with add-to-cart controls.
-- `WhyChooseSection.tsx`: 4 trust pillars + integration of the Home Protection Promise card.
-- `HomeProtectionCard.tsx`: Dedicated ₹10,000 property damage coverage shield guarantee.
+- `WhyChooseSection.tsx`: The Servicewala Promise 4-pillar trust model (Verified Experts, Upfront Pricing, 30-Day Guarantee, OEM Parts).
 - `HowItWorksSection.tsx`: 3-step effortless booking process visualization.
 - `TestimonialsSection.tsx`: 4.9★ verified customer reviews with service badges and recency tags.
 - `BrandMarqueeSection.tsx`: Continuous CSS-animated infinite multi-brand marquee for 22+ OEM brands.
@@ -154,7 +197,7 @@ This calculation automatically updates:
 
 ---
 
-## 6. Migration Path to Phase 2 (Backend Integration)
+## 7. Migration Path to Phase 2 (Backend Integration)
 
 When transitioning from Phase 1 (Frontend Simulation) to Phase 2 (Production Cloud):
 1. **Database:** Map `src/data/mockEcosystemData.ts` schemas directly to **PostgreSQL / Supabase** tables.

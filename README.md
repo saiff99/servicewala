@@ -19,11 +19,23 @@ From a single unified codebase, **Servicewala** delivers:
 Servicewala unifies three complete user roles into one synchronized ecosystem:
 
 ### 1. 🛒 Customer Portal (`app/(customer)`)
-- **Urban Company Style Header:** City location selector (Kolkata, Salt Lake, Howrah, etc.), direct category links (*Home, Computer, Printer, Air Conditioner*), global search, cart counter, and Profile dropdown menu with active bookings badge.
+- **Urban Company Style Header & Mobile Navigation:** 
+  - **Desktop:** City location selector with auto GPS & area search, direct category navigation, global search, cart counter, and Profile dropdown menu with active bookings badge.
+  - **Mobile Header:** Ultra-clean compact `SW` app badge, quick location pill with dropdown, profile avatar with active status dot, and a dedicated full-width search bar.
+  - **Mobile Bottom Tabs:** Adaptive mobile tabs organized for rapid ordering: *Home*, *Categories*, *Cart* (with live quantity badge), and *Bookings*.
 - **HomeAdvisor Luxury Hero Section:** Clean framed workstation hero banner, frosted glass headline card, and responsive pill search capsule with smooth focus styling, live filtering, and auto-scroll to search results.
 - **10-Category Specialized Quick Bar:** Direct filtering for *Laptop & Mac, Desktop PC, Printer Repair, AC Service, Refrigerator, Washing Machine, Geyser, Chimney, Air Cooler, Home Cleaning*.
 - **Seasonal Deals & Offers:** One-tap promo code apply with instant checkout price deductions.
-- **₹10,000 Home Protection Promise Shield:** Zero-liability property damage coverage, 48-hour digital claim settlement, and 100% UIDAI biometric & police-verified technicians.
+- **The Servicewala Promise ("Why Choose Servicewala?"):** High-trust, legally compliant 4-pillar customer protection model:
+  - **100% Verified Experts:** UIDAI biometric & police clearance with *Pay After Service Done* assurance.
+  - **Upfront Fixed Pricing:** Standardized upfront rate cards with zero surprise charges.
+  - **30-Day Service Guarantee:** 100% free re-work cover on serviced appliances.
+  - **Genuine OEM Spare Parts:** Direct manufacturer partnerships with brand warranty included.
+- **Uber & Swiggy-Grade Hyperlocal Geolocation Engine:**
+  - **2-Pathway Location Flow:** 1-tap automatic GPS / Wi-Fi detection (`Use current location`) or manual search with instant autocomplete and custom address addition.
+  - **Micro-Landmark & Village Search:** Instant local matching for neighborhoods, villages, clubs, and schools with Uber-style proximity badges (`22 km`, `23 km`).
+  - **Strict India-Only Geocoding (`country: IN`):** 100% filter preventing foreign country false-positives.
+  - **Cellular Gateway Safeguard:** Mobile 4G/5G carrier-grade NAT protection preventing remote cellular gateway IPs (e.g. Barrackpore/Kalyani) from misrouting users when on mobile data.
 - **22+ Multi-Brand Infinite Continuous Marquee:** Ultra-smooth CSS-driven infinite loop featuring OEM authorized repair badges for Samsung, Apple, LG, Voltas, HP, Dell, and other top global brands.
 - **Integrated Mobile App Badges & QR Code:** Official Google Play Store, Apple App Store, and Universal QR Scan cards cleanly embedded directly inside the footer.
 - **Interactive FAQ Accordion:** Comprehensive customer help covering technician verification, rapid dispatch (45-60 min arrival), transparent pricing, and 30-day warranty.
