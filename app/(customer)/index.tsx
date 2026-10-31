@@ -80,7 +80,7 @@ export default function CustomerHomeScreen() {
           onClearFilter={() => setActiveQuickFilter(null)}
         />
 
-        {/* 7. Why Choose Servicewala & ₹10,000 Protection Promise */}
+        {/* 7. Why Choose Servicewala Trust Pillars */}
         <WhyChooseSection />
 
         {/* 9. How It Works (3 Effortless Steps) */}

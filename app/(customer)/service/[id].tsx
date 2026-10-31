@@ -336,7 +336,7 @@ export default function ServiceDetailsScreen() {
                   <View style={styles.safetyTopTexts}>
                     <Text style={styles.safetyTopTitle}>Servicewala Doorstep Trust Promise</Text>
                     <Text style={styles.safetyTopSub}>
-                      Complimentary safety & property protection included with this booking
+                      Standardized service safety & satisfaction standards included with every booking
                     </Text>
                   </View>
                 </View>
@@ -346,12 +346,12 @@ export default function ServiceDetailsScreen() {
                     {
                       icon: 'finger-print-outline',
                       title: '100% Verified Techs',
-                      desc: 'Aadhaar biometric & police cleared',
+                      desc: 'Aadhaar biometric & background checked',
                     },
                     {
-                      icon: 'shield-half-outline',
-                      title: '₹10,000 Damage Cover',
-                      desc: 'Zero liability property insurance',
+                      icon: 'shield-checkmark-outline',
+                      title: 'Safe Service Protocols',
+                      desc: 'Standardized SOPs & verified equipment',
                     },
                     {
                       icon: 'receipt-outline',
