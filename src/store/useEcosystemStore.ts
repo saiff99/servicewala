@@ -41,6 +41,10 @@ interface EcosystemState {
   customerProfile: CustomerProfile;
   updateCustomerProfile: (updates: Partial<CustomerProfile>) => void;
 
+  // Selected Service Location
+  selectedLocation: string;
+  setSelectedLocation: (location: string) => void;
+
   // Navigation & Portal Management
   activePortal: PortalType;
   currentPartnerId: string;
@@ -98,6 +102,7 @@ interface EcosystemState {
 
   // System Notifications
   notifications: EcosystemNotification[];
+  addNotification: (notification: Omit<EcosystemNotification, 'id' | 'timestamp'>) => void;
   dismissNotification: (id: string) => void;
   clearAllNotifications: () => void;
 
@@ -111,6 +116,19 @@ export const useEcosystemStore = create<EcosystemState>((set, get) => ({
     set((state) => ({
       customerProfile: { ...state.customerProfile, ...updates },
     })),
+
+  selectedLocation:
+    typeof window !== 'undefined' && window.localStorage
+      ? window.localStorage.getItem('servicewala_selected_location') || 'Budge Budge'
+      : 'Budge Budge',
+  setSelectedLocation: (location: string) => {
+    set({ selectedLocation: location });
+    if (typeof window !== 'undefined' && window.localStorage) {
+      try {
+        window.localStorage.setItem('servicewala_selected_location', location);
+      } catch {}
+    }
+  },
 
   activePortal: 'customer',
   currentPartnerId: 'tech-101', // Default partner: Rajesh Verma
@@ -606,6 +624,15 @@ export const useEcosystemStore = create<EcosystemState>((set, get) => ({
       targetPortal: 'customer',
     },
   ],
+
+  addNotification: (notification) => {
+    const newNotif: EcosystemNotification = {
+      ...notification,
+      id: `notif-${Date.now()}`,
+      timestamp: 'Just now',
+    };
+    set((state) => ({ notifications: [newNotif, ...state.notifications] }));
+  },
 
   dismissNotification: (id) => {
     set((state) => ({
